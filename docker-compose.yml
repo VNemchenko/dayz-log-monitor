@@ -1,23 +1,38 @@
-﻿services:
-  dayz-log-monitor:
-    build: .
-    container_name: dayz-log-monitor
-    restart: unless-stopped
+﻿x-monitor-common: &monitor-common
+  build: .
+  restart: unless-stopped
+  environment: &monitor-env
+    LOGS_DIR: /logs
+    STATE_FILE: /state/position.txt
+    CHECK_INTERVAL: ${CHECK_INTERVAL:-30}
+    WEBHOOK_TIMEOUT: ${WEBHOOK_TIMEOUT:-10}
+    WEBHOOK_RETRIES: ${WEBHOOK_RETRIES:-3}
+    WEBHOOK_RETRY_BACKOFF: ${WEBHOOK_RETRY_BACKOFF:-2}
+  logging:
+    driver: "json-file"
+    options:
+      max-size: "10m"
+      max-file: "3"
+
+services:
+  dayz-log-monitor-1:
+    <<: *monitor-common
+    container_name: dayz-log-monitor-1
     volumes:
-      # Path to DayZ ADM logs on the host
-      - ${LOGS_HOST_PATH}:/logs:ro
-      # Local persistent state (last read offset)
-      - ./state:/state
+      - ${LOGS_HOST_PATH_1}:/logs:ro
+      - ./state/server1:/state
     environment:
-      - LOGS_DIR=/logs
-      - WEBHOOK_URL=${WEBHOOK_URL}
-      - STATE_FILE=${STATE_FILE:-/state/position.txt}
-      - CHECK_INTERVAL=${CHECK_INTERVAL:-30}
-      - WEBHOOK_TIMEOUT=${WEBHOOK_TIMEOUT:-10}
-      - WEBHOOK_RETRIES=${WEBHOOK_RETRIES:-3}
-      - WEBHOOK_RETRY_BACKOFF=${WEBHOOK_RETRY_BACKOFF:-2}
-    logging:
-      driver: "json-file"
-      options:
-        max-size: "10m"
-        max-file: "3"
+      <<: *monitor-env
+      WEBHOOK_URL: ${WEBHOOK_URL_1}
+      SOURCE_NAME: ${SOURCE_NAME_1:-server1}
+
+  dayz-log-monitor-2:
+    <<: *monitor-common
+    container_name: dayz-log-monitor-2
+    volumes:
+      - ${LOGS_HOST_PATH_2}:/logs:ro
+      - ./state/server2:/state
+    environment:
+      <<: *monitor-env
+      WEBHOOK_URL: ${WEBHOOK_URL_2}
+      SOURCE_NAME: ${SOURCE_NAME_2:-server2}

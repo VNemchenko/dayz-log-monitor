@@ -10,6 +10,7 @@ import requests
 
 LOGS_DIR = os.getenv("LOGS_DIR", "/logs")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
+SOURCE_NAME = os.getenv("SOURCE_NAME", "dayz-server").strip() or "dayz-server"
 RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
 FALLBACK_STATE_FILE = "/tmp/dayz-log-monitor/position.txt"
 
@@ -135,6 +136,7 @@ def send_to_webhook(lines: list[str]) -> bool:
 
     payload = {
         "timestamp": datetime.now().isoformat(),
+        "source": SOURCE_NAME,
         "count": len(lines),
         "logs": lines,
     }
@@ -191,6 +193,7 @@ def monitor_logs() -> None:
     """Main monitoring loop."""
     print("=== DayZ Log Monitor started ===")
     print(f"Logs directory: {LOGS_DIR}")
+    print(f"Source name: {SOURCE_NAME}")
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     print(f"Check interval: {CHECK_INTERVAL}s")
     print(f"State file: {STATE_FILE}")
