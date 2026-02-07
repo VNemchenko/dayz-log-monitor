@@ -1,0 +1,22 @@
+﻿services:
+  dayz-log-monitor:
+    build: .
+    container_name: dayz-log-monitor
+    restart: unless-stopped
+    volumes:
+      # Path to DayZ ADM logs on the host
+      - ${LOGS_HOST_PATH}:/logs:ro
+      # Local persistent state (last read offset)
+      - ./state:/state
+    environment:
+      - LOGS_DIR=/logs
+      - WEBHOOK_URL=${WEBHOOK_URL}
+      - CHECK_INTERVAL=${CHECK_INTERVAL:-30}
+      - WEBHOOK_TIMEOUT=${WEBHOOK_TIMEOUT:-10}
+      - WEBHOOK_RETRIES=${WEBHOOK_RETRIES:-3}
+      - WEBHOOK_RETRY_BACKOFF=${WEBHOOK_RETRY_BACKOFF:-2}
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"

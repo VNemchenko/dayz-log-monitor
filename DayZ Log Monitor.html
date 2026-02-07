@@ -1,0 +1,640 @@
+﻿<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DayZ Log Monitor - Р¤Р°Р№Р»С‹ РґР»СЏ СѓСЃС‚Р°РЅРѕРІРєРё</title>
+    <style>
+        :root {
+            --color-background: #fcfcf9;
+            --color-surface: #fffffe;
+            --color-text: #13343b;
+            --color-text-secondary: #626c71;
+            --color-primary: #21808d;
+            --color-primary-hover: #1d7480;
+            --color-border: rgba(94, 82, 64, 0.2);
+            --color-success: #21808d;
+            --color-warning: #e68161;
+            --color-code-bg: rgba(94, 82, 64, 0.08);
+            --radius-base: 8px;
+            --radius-lg: 12px;
+            --space-8: 8px;
+            --space-12: 12px;
+            --space-16: 16px;
+            --space-24: 24px;
+            --space-32: 32px;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --color-background: #1f2121;
+                --color-surface: #262828;
+                --color-text: #f5f5f5;
+                --color-text-secondary: rgba(167, 169, 169, 0.7);
+                --color-primary: #32b8c6;
+                --color-primary-hover: #2da6b2;
+                --color-border: rgba(119, 124, 124, 0.3);
+                --color-code-bg: rgba(119, 124, 124, 0.15);
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--color-background);
+            color: var(--color-text);
+            line-height: 1.6;
+            padding: var(--space-24);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: var(--space-8);
+            color: var(--color-text);
+        }
+
+        h2 {
+            font-size: 24px;
+            font-weight: 600;
+            margin-top: var(--space-32);
+            margin-bottom: var(--space-16);
+            color: var(--color-text);
+        }
+
+        h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: var(--space-24);
+            margin-bottom: var(--space-12);
+            color: var(--color-text);
+        }
+
+        .subtitle {
+            font-size: 16px;
+            color: var(--color-text-secondary);
+            margin-bottom: var(--space-32);
+        }
+
+        .card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-lg);
+            padding: var(--space-24);
+            margin-bottom: var(--space-24);
+        }
+
+        .code-block {
+            background: var(--color-code-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+            margin: var(--space-16) 0;
+            position: relative;
+            overflow-x: auto;
+        }
+
+        .code-block pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            white-space: pre;
+            color: var(--color-text);
+        }
+
+        .file-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-12);
+            padding-bottom: var(--space-8);
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .file-name {
+            font-weight: 600;
+            color: var(--color-text);
+            font-size: 15px;
+        }
+
+        .copy-btn {
+            background: var(--color-primary);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+
+        .copy-btn:hover {
+            background: var(--color-primary-hover);
+        }
+
+        .copy-btn.copied {
+            background: var(--color-success);
+        }
+
+        .step {
+            display: flex;
+            gap: var(--space-16);
+            margin-bottom: var(--space-24);
+        }
+
+        .step-number {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            background: var(--color-primary);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .step-content {
+            flex: 1;
+        }
+
+        .alert {
+            background: rgba(230, 129, 97, 0.1);
+            border: 1px solid var(--color-warning);
+            border-radius: var(--radius-base);
+            padding: var(--space-16);
+            margin: var(--space-16) 0;
+        }
+
+        .alert-title {
+            font-weight: 600;
+            margin-bottom: var(--space-8);
+            color: var(--color-warning);
+        }
+
+        ul, ol {
+            margin-left: var(--space-24);
+            margin-top: var(--space-8);
+            margin-bottom: var(--space-16);
+        }
+
+        li {
+            margin-bottom: var(--space-8);
+        }
+
+        code {
+            background: var(--color-code-bg);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .info-box {
+            background: rgba(33, 128, 141, 0.1);
+            border-left: 4px solid var(--color-primary);
+            padding: var(--space-16);
+            margin: var(--space-16) 0;
+            border-radius: var(--radius-base);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>DayZ Log Monitor Docker Service</h1>
+        <p class="subtitle">РЎРµСЂРІРёСЃ РґР»СЏ РјРѕРЅРёС‚РѕСЂРёРЅРіР° Р»РѕРіРѕРІ DayZ Рё РѕС‚РїСЂР°РІРєРё РѕР±РЅРѕРІР»РµРЅРёР№ РЅР° webhook</p>
+
+        <div class="card">
+            <h2>РћРїРёСЃР°РЅРёРµ СЂРµС€РµРЅРёСЏ</h2>
+            <p>Р­С‚РѕС‚ Docker-СЃРµСЂРІРёСЃ СЂРµС€Р°РµС‚ РІСЃРµ РІР°С€Рё Р·Р°РґР°С‡Рё:</p>
+            <ul>
+                <li>вњ… РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РЅР°С…РѕРґРёС‚ СЃР°РјС‹Р№ РЅРѕРІС‹Р№ Р»РѕРі-С„Р°Р№Р» РїРѕ РїР°С‚С‚РµСЂРЅСѓ <code>DayZServer_*.ADM</code></li>
+                <li>вњ… РћС‚СЃР»РµР¶РёРІР°РµС‚ СЃРѕР·РґР°РЅРёРµ РЅРѕРІС‹С… С„Р°Р№Р»РѕРІ (РєРѕРіРґР° РґР°С‚Р° РјРµРЅСЏРµС‚СЃСЏ)</li>
+                <li>вњ… Р§РёС‚Р°РµС‚ С‚РѕР»СЊРєРѕ РЅРѕРІС‹Рµ СЃС‚СЂРѕРєРё (Р·Р°РїРѕРјРёРЅР°РµС‚ РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р»Рµ)</li>
+                <li>вњ… РћС‚РїСЂР°РІР»СЏРµС‚ РЅРѕРІС‹Рµ Р·Р°РїРёСЃРё РїР°С‡РєРѕР№ РЅР° РІР°С€ webhook РєР°Р¶РґС‹Рµ 30 СЃРµРєСѓРЅРґ</li>
+                <li>вњ… РџРµСЂРµР¶РёРІР°РµС‚ РїРµСЂРµР·Р°РїСѓСЃРєРё (СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР·РёС†РёСЋ С‡С‚РµРЅРёСЏ)</li>
+            </ul>
+        </div>
+
+        <div class="card">
+            <h2>РЎС‚СЂСѓРєС‚СѓСЂР° РїСЂРѕРµРєС‚Р°</h2>
+            <p>РЎРѕР·РґР°Р№С‚Рµ РїР°РїРєСѓ <code>dayz-log-monitor</code> Рё СЂР°Р·РјРµСЃС‚РёС‚Рµ РІ РЅРµР№ СЃР»РµРґСѓСЋС‰РёРµ С„Р°Р№Р»С‹:</p>
+            
+            <div class="code-block">
+                <pre>dayz-log-monitor/
+в”њв”Ђв”Ђ monitor.py
+в”њв”Ђв”Ђ Dockerfile
+в”њв”Ђв”Ђ docker-compose.yml
+в””в”Ђв”Ђ requirements.txt</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Р¤Р°Р№Р»С‹ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ</h2>
+
+            <h3>1. monitor.py</h3>
+            <div class="file-header">
+                <span class="file-name">monitor.py</span>
+                <button class="copy-btn" onclick="copyCode('code1', this)">РљРѕРїРёСЂРѕРІР°С‚СЊ</button>
+            </div>
+            <div class="code-block">
+                <pre id="code1">#!/usr/bin/env python3
+import os
+import time
+import glob
+import requests
+import json
+from pathlib import Path
+from datetime import datetime
+
+# РљРѕРЅС„РёРіСѓСЂР°С†РёСЏ РёР· РїРµСЂРµРјРµРЅРЅС‹С… РѕРєСЂСѓР¶РµРЅРёСЏ
+LOGS_DIR = os.getenv('LOGS_DIR', '/logs')
+WEBHOOK_URL = os.getenv('WEBHOOK_URL')
+CHECK_INTERVAL = int(os.getenv('CHECK_INTERVAL', '30'))
+STATE_FILE = '/state/position.txt'
+
+def get_latest_log_file():
+    """РќР°С…РѕРґРёС‚ СЃР°РјС‹Р№ РЅРѕРІС‹Р№ Р»РѕРі-С„Р°Р№Р» РїРѕ РїР°С‚С‚РµСЂРЅСѓ"""
+    pattern = os.path.join(LOGS_DIR, 'DayZServer_*.ADM')
+    files = glob.glob(pattern)
+    
+    if not files:
+        return None
+    
+    # РЎРѕСЂС‚РёСЂСѓРµРј РїРѕ РІСЂРµРјРµРЅРё РјРѕРґРёС„РёРєР°С†РёРё
+    latest_file = max(files, key=os.path.getmtime)
+    return latest_file
+
+def load_state():
+    """Р—Р°РіСЂСѓР¶Р°РµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ (РїСѓС‚СЊ Рє С„Р°Р№Р»Сѓ Рё РїРѕР·РёС†РёСЋ)"""
+    if not os.path.exists(STATE_FILE):
+        return None, 0
+    
+    try:
+        with open(STATE_FILE, 'r') as f:
+            data = f.read().strip().split('\n')
+            if len(data) >= 2:
+                return data[0], int(data[1])
+            elif len(data) == 1:
+                return data[0], 0
+    except:
+        pass
+    
+    return None, 0
+
+def save_state(filepath, position):
+    """РЎРѕС…СЂР°РЅСЏРµС‚ СЃРѕСЃС‚РѕСЏРЅРёРµ"""
+    os.makedirs(os.path.dirname(STATE_FILE), exist_ok=True)
+    with open(STATE_FILE, 'w') as f:
+        f.write(f"{filepath}\n{position}")
+
+def send_to_webhook(lines):
+    """РћС‚РїСЂР°РІР»СЏРµС‚ СЃС‚СЂРѕРєРё РЅР° webhook"""
+    if not lines or not WEBHOOK_URL:
+        return
+    
+    try:
+        payload = {
+            'timestamp': datetime.now().isoformat(),
+            'count': len(lines),
+            'logs': lines
+        }
+        
+        response = requests.post(
+            WEBHOOK_URL,
+            json=payload,
+            headers={'Content-Type': 'application/json'},
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            print(f"вњ“ РћС‚РїСЂР°РІР»РµРЅРѕ {len(lines)} СЃС‚СЂРѕРє РЅР° webhook")
+        else:
+            print(f"вњ— РћС€РёР±РєР° webhook: {response.status_code}")
+            
+    except Exception as e:
+        print(f"вњ— РћС€РёР±РєР° РѕС‚РїСЂР°РІРєРё: {e}")
+
+def monitor_logs():
+    """РћСЃРЅРѕРІРЅРѕР№ С†РёРєР» РјРѕРЅРёС‚РѕСЂРёРЅРіР°"""
+    print("=== DayZ Log Monitor Р·Р°РїСѓС‰РµРЅ ===")
+    print(f"Р”РёСЂРµРєС‚РѕСЂРёСЏ Р»РѕРіРѕРІ: {LOGS_DIR}")
+    print(f"Webhook: {WEBHOOK_URL}")
+    print(f"РРЅС‚РµСЂРІР°Р» РїСЂРѕРІРµСЂРєРё: {CHECK_INTERVAL} СЃРµРє")
+    print()
+    
+    last_file, last_position = load_state()
+    
+    while True:
+        try:
+            # РќР°С…РѕРґРёРј СЃР°РјС‹Р№ РЅРѕРІС‹Р№ С„Р°Р№Р»
+            current_file = get_latest_log_file()
+            
+            if not current_file:
+                print("вљ  Р›РѕРі-С„Р°Р№Р»С‹ РЅРµ РЅР°Р№РґРµРЅС‹, РѕР¶РёРґР°РЅРёРµ...")
+                time.sleep(CHECK_INTERVAL)
+                continue
+            
+            # Р•СЃР»Рё С„Р°Р№Р» РёР·РјРµРЅРёР»СЃСЏ (РЅРѕРІС‹Р№ С„Р°Р№Р» СЃРѕР·РґР°РЅ)
+            if last_file != current_file:
+                print(f"в†’ РџРµСЂРµРєР»СЋС‡РµРЅРёРµ РЅР° РЅРѕРІС‹Р№ С„Р°Р№Р»: {os.path.basename(current_file)}")
+                last_file = current_file
+                last_position = 0
+            
+            # РџСЂРѕРІРµСЂСЏРµРј СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°
+            file_size = os.path.getsize(current_file)
+            
+            # Р•СЃР»Рё С„Р°Р№Р» Р±С‹Р» СѓСЃРµС‡С‘РЅ (РЅР°РїСЂРёРјРµСЂ, РїРµСЂРµР·Р°РїРёСЃСЊ)
+            if file_size < last_position:
+                print("вљ  Р¤Р°Р№Р» Р±С‹Р» СѓСЃРµС‡С‘РЅ, СЃР±СЂРѕСЃ РїРѕР·РёС†РёРё")
+                last_position = 0
+            
+            # Р•СЃР»Рё РµСЃС‚СЊ РЅРѕРІС‹Рµ РґР°РЅРЅС‹Рµ
+            if file_size > last_position:
+                with open(current_file, 'r', encoding='utf-8', errors='ignore') as f:
+                    f.seek(last_position)
+                    new_lines = []
+                    
+                    for line in f:
+                        line = line.rstrip('\n\r')
+                        if line:  # РџСЂРѕРїСѓСЃРєР°РµРј РїСѓСЃС‚С‹Рµ СЃС‚СЂРѕРєРё
+                            new_lines.append(line)
+                    
+                    new_position = f.tell()
+                
+                if new_lines:
+                    print(f"рџ“ќ РќР°Р№РґРµРЅРѕ {len(new_lines)} РЅРѕРІС‹С… СЃС‚СЂРѕРє")
+                    send_to_webhook(new_lines)
+                    last_position = new_position
+                    save_state(last_file, last_position)
+            
+        except Exception as e:
+            print(f"вњ— РћС€РёР±РєР°: {e}")
+        
+        time.sleep(CHECK_INTERVAL)
+
+if __name__ == '__main__':
+    if not WEBHOOK_URL:
+        print("РћРЁРР‘РљРђ: РќРµ СѓРєР°Р·Р°РЅ WEBHOOK_URL")
+        exit(1)
+    
+    monitor_logs()</pre>
+            </div>
+
+            <h3>2. requirements.txt</h3>
+            <div class="file-header">
+                <span class="file-name">requirements.txt</span>
+                <button class="copy-btn" onclick="copyCode('code2', this)">РљРѕРїРёСЂРѕРІР°С‚СЊ</button>
+            </div>
+            <div class="code-block">
+                <pre id="code2">requests==2.31.0</pre>
+            </div>
+
+            <h3>3. Dockerfile</h3>
+            <div class="file-header">
+                <span class="file-name">Dockerfile</span>
+                <button class="copy-btn" onclick="copyCode('code3', this)">РљРѕРїРёСЂРѕРІР°С‚СЊ</button>
+            </div>
+            <div class="code-block">
+                <pre id="code3">FROM python:3.11-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY monitor.py .
+RUN chmod +x monitor.py
+
+CMD ["python", "-u", "monitor.py"]</pre>
+            </div>
+
+            <h3>4. docker-compose.yml</h3>
+            <div class="file-header">
+                <span class="file-name">docker-compose.yml</span>
+                <button class="copy-btn" onclick="copyCode('code4', this)">РљРѕРїРёСЂРѕРІР°С‚СЊ</button>
+            </div>
+            <div class="code-block">
+                <pre id="code4">version: '3.8'
+
+services:
+  dayz-log-monitor:
+    build: .
+    container_name: dayz-log-monitor
+    restart: unless-stopped
+    volumes:
+      # РџСѓС‚СЊ Рє Р»РѕРіР°Рј (С‡РёС‚Р°РµРј)
+      - ${LOGS_HOST_PATH}:/logs:ro
+      # РЎРѕСЃС‚РѕСЏРЅРёРµ (С‡С‚РѕР±С‹ РЅРµ С‚РµСЂСЏС‚СЊ РїРѕР·РёС†РёСЋ РїРѕСЃР»Рµ РїРµСЂРµР·Р°РїСѓСЃРєР°)
+      - ./state:/state
+    environment:
+      - LOGS_DIR=/logs
+      - WEBHOOK_URL=https://your-webhook.example/path
+      - CHECK_INTERVAL=30
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>РРЅСЃС‚СЂСѓРєС†РёСЏ РїРѕ СѓСЃС‚Р°РЅРѕРІРєРµ</h2>
+
+            <div class="step">
+                <div class="step-number">1</div>
+                <div class="step-content">
+                    <h3>РЎРѕР·РґР°Р№С‚Рµ РґРёСЂРµРєС‚РѕСЂРёСЋ РїСЂРѕРµРєС‚Р°</h3>
+                    <div class="code-block">
+                        <pre>mkdir -p ~/dayz-log-monitor
+cd ~/dayz-log-monitor</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">2</div>
+                <div class="step-content">
+                    <h3>РЎРѕР·РґР°Р№С‚Рµ РІСЃРµ С„Р°Р№Р»С‹</h3>
+                    <p>РЎРєРѕРїРёСЂСѓР№С‚Рµ СЃРѕРґРµСЂР¶РёРјРѕРµ РєР°Р¶РґРѕРіРѕ С„Р°Р№Р»Р° РІС‹С€Рµ Рё СЃРѕР·РґР°Р№С‚Рµ РёС…:</p>
+                    <div class="code-block">
+                        <pre># РЎРѕР·РґР°Р№С‚Рµ monitor.py
+nano monitor.py
+# Р’СЃС‚Р°РІСЊС‚Рµ РєРѕРґ, Ctrl+O РґР»СЏ СЃРѕС…СЂР°РЅРµРЅРёСЏ, Ctrl+X РґР»СЏ РІС‹С…РѕРґР°
+
+# РЎРѕР·РґР°Р№С‚Рµ requirements.txt
+nano requirements.txt
+
+# РЎРѕР·РґР°Р№С‚Рµ Dockerfile
+nano Dockerfile
+
+# РЎРѕР·РґР°Р№С‚Рµ docker-compose.yml
+nano docker-compose.yml</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">3</div>
+                <div class="step-content">
+                    <h3>Р—Р°РїСѓСЃС‚РёС‚Рµ СЃРµСЂРІРёСЃ</h3>
+                    <div class="code-block">
+                        <pre>docker-compose up -d</pre>
+                    </div>
+                </div>
+            </div>
+
+            <div class="step">
+                <div class="step-number">4</div>
+                <div class="step-content">
+                    <h3>РџСЂРѕРІРµСЂСЊС‚Рµ Р»РѕРіРё</h3>
+                    <div class="code-block">
+                        <pre># РЎРјРѕС‚СЂРёРј Р»РѕРіРё РІ СЂРµР°Р»СЊРЅРѕРј РІСЂРµРјРµРЅРё
+docker-compose logs -f
+
+# РР»Рё С‚РѕР»СЊРєРѕ РїРѕСЃР»РµРґРЅРёРµ 50 СЃС‚СЂРѕРє
+docker-compose logs --tail=50</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>РљР°Рє СЌС‚Рѕ СЂР°Р±РѕС‚Р°РµС‚</h2>
+            
+            <div class="info-box">
+                <h3>РђР»РіРѕСЂРёС‚Рј СЂР°Р±РѕС‚С‹:</h3>
+                <ol>
+                    <li>РљР°Р¶РґС‹Рµ 30 СЃРµРєСѓРЅРґ СЃРєСЂРёРїС‚ РёС‰РµС‚ СЃР°РјС‹Р№ РЅРѕРІС‹Р№ С„Р°Р№Р» РїРѕ РїР°С‚С‚РµСЂРЅСѓ <code>DayZServer_*.ADM</code></li>
+                    <li>Р•СЃР»Рё РЅР°Р№РґРµРЅ РЅРѕРІС‹Р№ С„Р°Р№Р» (СЃ РґСЂСѓРіРѕР№ РґР°С‚РѕР№) вЂ” РїРµСЂРµРєР»СЋС‡Р°РµС‚СЃСЏ РЅР° РЅРµРіРѕ</li>
+                    <li>Р§РёС‚Р°РµС‚ С„Р°Р№Р» СЃ РїРѕСЃР»РµРґРЅРµР№ Р·Р°РїРѕРјРЅРµРЅРЅРѕР№ РїРѕР·РёС†РёРё</li>
+                    <li>РЎРѕР±РёСЂР°РµС‚ РІСЃРµ РЅРѕРІС‹Рµ СЃС‚СЂРѕРєРё</li>
+                    <li>РћС‚РїСЂР°РІР»СЏРµС‚ РёС… РїР°С‡РєРѕР№ РЅР° webhook РІ С„РѕСЂРјР°С‚Рµ JSON</li>
+                    <li>РЎРѕС…СЂР°РЅСЏРµС‚ РЅРѕРІСѓСЋ РїРѕР·РёС†РёСЋ РІ С„Р°Р№Р» <code>./state/position.txt</code></li>
+                </ol>
+            </div>
+
+            <h3>Р¤РѕСЂРјР°С‚ РґР°РЅРЅС‹С… РЅР° webhook:</h3>
+            <div class="code-block">
+                <pre>{
+  "timestamp": "2026-02-07T11:08:45.123456",
+  "count": 5,
+  "logs": [
+    "06:42:38 | ##### PlayerList log: 1 players",
+    "06:42:38 | Player \"Survivor\" (id=GxkIaJnYWf0s... pos=<11478.6, 14898.2, 58.8>)",
+    "06:42:38 | #####",
+    "06:47:37 | ##### PlayerList log: 1 players",
+    "..."
+  ]
+}</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>РЈРїСЂР°РІР»РµРЅРёРµ СЃРµСЂРІРёСЃРѕРј</h2>
+            
+            <h3>РћСЃС‚Р°РЅРѕРІРёС‚СЊ:</h3>
+            <div class="code-block">
+                <pre>docker-compose down</pre>
+            </div>
+
+            <h3>РџРµСЂРµР·Р°РїСѓСЃС‚РёС‚СЊ:</h3>
+            <div class="code-block">
+                <pre>docker-compose restart</pre>
+            </div>
+
+            <h3>РџРµСЂРµСЃРѕР±СЂР°С‚СЊ РїРѕСЃР»Рµ РёР·РјРµРЅРµРЅРёР№:</h3>
+            <div class="code-block">
+                <pre>docker-compose down
+docker-compose build
+docker-compose up -d</pre>
+            </div>
+
+            <h3>РџРѕСЃРјРѕС‚СЂРµС‚СЊ СЃС‚Р°С‚СѓСЃ:</h3>
+            <div class="code-block">
+                <pre>docker-compose ps</pre>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>РќР°СЃС‚СЂРѕР№РєР° РїР°СЂР°РјРµС‚СЂРѕРІ</h2>
+            <p>Р’ С„Р°Р№Р»Рµ <code>docker-compose.yml</code> РІС‹ РјРѕР¶РµС‚Рµ РёР·РјРµРЅРёС‚СЊ:</p>
+            
+            <ul>
+                <li><code>WEBHOOK_URL</code> - set your webhook URL in <code>.env</code></li>
+                <li><code>CHECK_INTERVAL</code> вЂ” РєР°Рє С‡Р°СЃС‚Рѕ РїСЂРѕРІРµСЂСЏС‚СЊ Р»РѕРіРё (РІ СЃРµРєСѓРЅРґР°С…, РїРѕ СѓРјРѕР»С‡Р°РЅРёСЋ 30)</li>
+                <li><code>volumes</code> вЂ” РїСѓС‚СЊ Рє Р»РѕРіР°Рј РµСЃР»Рё РёР·РјРµРЅРёС‚СЃСЏ</li>
+            </ul>
+
+            <div class="alert">
+                <div class="alert-title">вљ пёЏ Р’Р°Р¶РЅРѕ</div>
+                <p>РџРѕСЃР»Рµ РёР·РјРµРЅРµРЅРёСЏ РїР°СЂР°РјРµС‚СЂРѕРІ РїРµСЂРµР·Р°РїСѓСЃС‚РёС‚Рµ СЃРµСЂРІРёСЃ: <code>docker-compose restart</code></p>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>РћСЃРѕР±РµРЅРЅРѕСЃС‚Рё СЂРµС€РµРЅРёСЏ</h2>
+            
+            <h3>вњ… РџСЂРµРёРјСѓС‰РµСЃС‚РІР°:</h3>
+            <ul>
+                <li>РђРІС‚РѕРјР°С‚РёС‡РµСЃРєРё РЅР°С…РѕРґРёС‚ РЅРѕРІС‹Рµ С„Р°Р№Р»С‹ РїСЂРё СЃРјРµРЅРµ РґР°С‚С‹</li>
+                <li>РќРµ РїСЂРѕРїСѓСЃРєР°РµС‚ СЃС‚СЂРѕРєРё РїСЂРё РїРµСЂРµР·Р°РїСѓСЃРєРµ (СЃРѕС…СЂР°РЅСЏРµС‚ РїРѕР·РёС†РёСЋ)</li>
+                <li>РћС‚РїСЂР°РІР»СЏРµС‚ Р»РѕРіРё РїР°С‡РєР°РјРё (СЌС„С„РµРєС‚РёРІРЅРµРµ С‡РµРј РїРѕ РѕРґРЅРѕР№ СЃС‚СЂРѕРєРµ)</li>
+                <li>Р›РµРіРєРѕ РјР°СЃС€С‚Р°Р±РёСЂСѓРµС‚СЃСЏ Рё РЅР°СЃС‚СЂР°РёРІР°РµС‚СЃСЏ</li>
+                <li>РњРёРЅРёРјР°Р»СЊРЅРѕРµ РїРѕС‚СЂРµР±Р»РµРЅРёРµ СЂРµСЃСѓСЂСЃРѕРІ</li>
+            </ul>
+
+            <h3>рџ”§ РћР±СЂР°Р±РѕС‚РєР° РєСЂР°РµРІС‹С… СЃР»СѓС‡Р°РµРІ:</h3>
+            <ul>
+                <li>Р•СЃР»Рё С„Р°Р№Р»Р° РµС‰Рµ РЅРµС‚ вЂ” Р¶РґРµС‚ РїРѕСЏРІР»РµРЅРёСЏ</li>
+                <li>Р•СЃР»Рё С„Р°Р№Р» Р±С‹Р» СѓСЃРµС‡РµРЅ вЂ” РЅР°С‡РёРЅР°РµС‚ СЃРЅР°С‡Р°Р»Р°</li>
+                <li>Р•СЃР»Рё СЃРѕР·РґР°Р»СЃСЏ РЅРѕРІС‹Р№ С„Р°Р№Р» вЂ” Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РїРµСЂРµРєР»СЋС‡Р°РµС‚СЃСЏ</li>
+                <li>РџРµСЂРµР¶РёРІР°РµС‚ РїРµСЂРµР·Р°РїСѓСЃРєРё Docker</li>
+            </ul>
+        </div>
+
+        <div class="info-box">
+            <h3>рџ’Ў РЎРѕРІРµС‚</h3>
+            <p>РџРѕСЃР»Рµ Р·Р°РїСѓСЃРєР° РїРѕРґРѕР¶РґРёС‚Рµ РґРѕ 30 СЃРµРєСѓРЅРґ Рё РїСЂРѕРІРµСЂСЊС‚Рµ Р»РѕРіРё РєРѕРјР°РЅРґРѕР№ <code>docker-compose logs</code>. Р’С‹ РґРѕР»Р¶РЅС‹ СѓРІРёРґРµС‚СЊ СЃРѕРѕР±С‰РµРЅРёСЏ Рѕ РЅР°Р№РґРµРЅРЅС‹С… С„Р°Р№Р»Р°С… Рё РѕС‚РїСЂР°РІР»РµРЅРЅС‹С… РґР°РЅРЅС‹С….</p>
+        </div>
+    </div>
+
+    <script>
+        function copyCode(elementId, button) {
+            const code = document.getElementById(elementId).textContent;
+            
+            navigator.clipboard.writeText(code).then(() => {
+                const originalText = button.textContent;
+                button.textContent = 'РЎРєРѕРїРёСЂРѕРІР°РЅРѕ!';
+                button.classList.add('copied');
+                
+                setTimeout(() => {
+                    button.textContent = originalText;
+                    button.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                console.error('РћС€РёР±РєР° РєРѕРїРёСЂРѕРІР°РЅРёСЏ:', err);
+                alert('РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєРѕРїРёСЂРѕРІР°С‚СЊ. РџРѕРїСЂРѕР±СѓР№С‚Рµ РІС‹РґРµР»РёС‚СЊ С‚РµРєСЃС‚ РІСЂСѓС‡РЅСѓСЋ.');
+            });
+        }
+    </script>
+</body>
+</html>
+
+
+
