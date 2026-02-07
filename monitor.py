@@ -10,7 +10,8 @@ import requests
 
 LOGS_DIR = os.getenv("LOGS_DIR", "/logs")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
-STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
+RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
+FALLBACK_STATE_FILE = "/tmp/dayz-log-monitor/position.txt"
 
 
 def read_int_env(name: str, default: int, min_value: int = 1) -> int:
@@ -32,6 +33,35 @@ CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
 WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
 WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
 WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
+
+
+def resolve_state_file(path: str) -> str:
+    state_dir = os.path.dirname(path) or "."
+    probe_file = os.path.join(state_dir, ".write-test")
+
+    try:
+        os.makedirs(state_dir, exist_ok=True)
+        with open(probe_file, "w", encoding="utf-8"):
+            pass
+        os.remove(probe_file)
+        return path
+    except OSError as exc:
+        try:
+            if os.path.exists(probe_file):
+                os.remove(probe_file)
+        except OSError:
+            pass
+
+        fallback_dir = os.path.dirname(FALLBACK_STATE_FILE)
+        os.makedirs(fallback_dir, exist_ok=True)
+        print(
+            f"[warn] STATE_FILE {path} is not writable ({exc}). "
+            f"Using volatile fallback {FALLBACK_STATE_FILE}."
+        )
+        return FALLBACK_STATE_FILE
+
+
+STATE_FILE = resolve_state_file(RAW_STATE_FILE)
 
 
 def mask_secret(secret: str) -> str:
@@ -163,6 +193,7 @@ def monitor_logs() -> None:
     print(f"Logs directory: {LOGS_DIR}")
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     print(f"Check interval: {CHECK_INTERVAL}s")
+    print(f"State file: {STATE_FILE}")
     print(
         f"Webhook timeout: {WEBHOOK_TIMEOUT}s, "
         f"retries: {WEBHOOK_RETRIES}, "

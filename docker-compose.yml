@@ -11,6 +11,7 @@
     environment:
       - LOGS_DIR=/logs
       - WEBHOOK_URL=${WEBHOOK_URL}
+      - STATE_FILE=${STATE_FILE:-/state/position.txt}
       - CHECK_INTERVAL=${CHECK_INTERVAL:-30}
       - WEBHOOK_TIMEOUT=${WEBHOOK_TIMEOUT:-10}
       - WEBHOOK_RETRIES=${WEBHOOK_RETRIES:-3}
