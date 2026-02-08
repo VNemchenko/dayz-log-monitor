@@ -15,6 +15,7 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
 SOURCE_NAME = os.getenv("SOURCE_NAME", "dayz-server").strip() or "dayz-server"
 RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
 RAW_BATCH_DIR = os.getenv("BATCH_DIR", "/state/batches")
+QUIET_HOURS_RANGE_RAW = os.getenv("QUIET_HOURS_RANGE", "").strip()
 FALLBACK_STATE_FILE = "/tmp/dayz-log-monitor/position.txt"
 FALLBACK_BATCH_DIR = "/tmp/dayz-log-monitor/batches"
 
@@ -103,12 +104,38 @@ def sanitize_source_name(value: str) -> str:
     return sanitized or "dayz-server"
 
 
+def parse_quiet_hours_range(value: str) -> Optional[Tuple[int, int]]:
+    if not value:
+        return None
+
+    match = re.match(r"^\s*([01]?\d|2[0-3])\s*-\s*([01]?\d|2[0-3])\s*$", value)
+    if not match:
+        print(
+            f"[warn] QUIET_HOURS_RANGE={value!r} has invalid format. "
+            "Expected 'HH-HH' (e.g. '1-6' or '23-7')."
+        )
+        return None
+
+    start_hour = int(match.group(1))
+    end_hour = int(match.group(2))
+
+    if start_hour == end_hour:
+        print(
+            f"[warn] QUIET_HOURS_RANGE={value!r} has zero length. "
+            "Quiet hours disabled."
+        )
+        return None
+
+    return start_hour, end_hour
+
+
 CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
 WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
 WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
 WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
 SEND_INTERVAL_SECONDS = read_int_env("SEND_INTERVAL_SECONDS", 1200, 1)
 CUSTOM_EXCLUDE_SUBSTRINGS = read_list_env("FILTER_EXCLUDE_SUBSTRINGS")
+QUIET_HOURS_RANGE = parse_quiet_hours_range(QUIET_HOURS_RANGE_RAW)
 
 EXCLUDE_SUBSTRINGS = []
 seen_tokens = set()
@@ -126,6 +153,11 @@ BATCH_DIR = resolve_writable_dir(RAW_BATCH_DIR, FALLBACK_BATCH_DIR, "BATCH_DIR")
 BATCH_FILENAME_RE = re.compile(
     rf"^{re.escape(SAFE_SOURCE_NAME)}_(\d{{8}}_\d{{6}})(?:_\d+)?\.log$"
 )
+
+if QUIET_HOURS_RANGE:
+    QUIET_HOURS_LABEL = f"{QUIET_HOURS_RANGE[0]:02d}-{QUIET_HOURS_RANGE[1]:02d}"
+else:
+    QUIET_HOURS_LABEL = "<disabled>"
 
 
 def mask_secret(secret: str) -> str:
@@ -289,6 +321,19 @@ def batch_age_seconds(filepath: str, now_dt: datetime) -> int:
     return int((now_dt - started_at).total_seconds())
 
 
+def is_in_quiet_hours(now_dt: datetime) -> bool:
+    if not QUIET_HOURS_RANGE:
+        return False
+
+    start_hour, end_hour = QUIET_HOURS_RANGE
+    current_hour = now_dt.hour
+
+    if start_hour < end_hour:
+        return start_hour <= current_hour < end_hour
+
+    return current_hour >= start_hour or current_hour < end_hour
+
+
 def create_batch_file(now_dt: datetime) -> str:
     timestamp = now_dt.strftime("%Y%m%d_%H%M%S")
     base_path = os.path.join(BATCH_DIR, f"{SAFE_SOURCE_NAME}_{timestamp}")
@@ -335,10 +380,10 @@ def read_batch_lines(batch_file: str) -> list[str]:
     return lines
 
 
-def send_due_batches(now_dt: datetime) -> None:
+def send_due_batches(now_dt: datetime, force_send_all: bool = False) -> None:
     for batch_file in list_batch_files():
         age_seconds = batch_age_seconds(batch_file, now_dt)
-        if age_seconds < SEND_INTERVAL_SECONDS:
+        if not force_send_all and age_seconds < SEND_INTERVAL_SECONDS:
             continue
 
         batch_lines = read_batch_lines(batch_file)
@@ -347,9 +392,10 @@ def send_due_batches(now_dt: datetime) -> None:
             print(f"[info] Removed empty batch file: {os.path.basename(batch_file)}")
             continue
 
+        send_reason = "forced_after_quiet_hours" if force_send_all else "due_interval"
         print(
             f"[info] Sending batch {os.path.basename(batch_file)} "
-            f"({len(batch_lines)} lines, age={age_seconds}s)"
+            f"({len(batch_lines)} lines, age={age_seconds}s, reason={send_reason})"
         )
 
         delivered = send_to_webhook(batch_lines)
@@ -369,6 +415,7 @@ def monitor_logs() -> None:
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     print(f"Check interval: {CHECK_INTERVAL}s")
     print(f"Send interval: {SEND_INTERVAL_SECONDS}s")
+    print(f"Quiet hours: {QUIET_HOURS_LABEL}")
     print(f"State file: {STATE_FILE}")
     print(f"Batch dir: {BATCH_DIR}")
     print(
@@ -380,12 +427,30 @@ def monitor_logs() -> None:
     print()
 
     last_file, last_position = load_state()
+    was_in_quiet_hours = False
 
     while True:
         now_dt = datetime.now()
 
         try:
-            send_due_batches(now_dt)
+            in_quiet_hours = is_in_quiet_hours(now_dt)
+
+            if in_quiet_hours:
+                if not was_in_quiet_hours:
+                    print(
+                        "[info] Entered quiet hours window "
+                        f"({QUIET_HOURS_LABEL}); sending paused."
+                    )
+            else:
+                if was_in_quiet_hours:
+                    print(
+                        "[info] Quiet hours ended; sending all accumulated batches now."
+                    )
+                    send_due_batches(now_dt, force_send_all=True)
+                else:
+                    send_due_batches(now_dt)
+
+            was_in_quiet_hours = in_quiet_hours
 
             current_file = get_latest_log_file()
             if not current_file:

@@ -28,6 +28,7 @@ services:
       SOURCE_NAME: ${SOURCE_NAME_1:-server1}
       CHECK_INTERVAL: ${CHECK_INTERVAL_1:-30}
       SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_1:-1200}
+      QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_1:-}
 
   dayz-log-monitor-2:
     <<: *monitor-common
@@ -41,6 +42,7 @@ services:
       SOURCE_NAME: ${SOURCE_NAME_2:-server2}
       CHECK_INTERVAL: ${CHECK_INTERVAL_2:-30}
       SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_2:-1200}
+      QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_2:-}
 
   dayz-log-monitor-test:
     <<: *monitor-common
@@ -54,6 +56,7 @@ services:
       SOURCE_NAME: ${SOURCE_NAME_TEST:-test}
       CHECK_INTERVAL: ${CHECK_INTERVAL_TEST:-30}
       SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_TEST:-1200}
+      QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_TEST:-}
 
   dayz-log-monitor-test-2:
     <<: *monitor-common
@@ -67,3 +70,4 @@ services:
       SOURCE_NAME: ${SOURCE_NAME_TEST_2:-test2}
       CHECK_INTERVAL: ${CHECK_INTERVAL_TEST_2:-30}
       SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_TEST_2:-1200}
+      QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_TEST_2:-}
