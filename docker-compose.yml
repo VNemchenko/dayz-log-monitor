@@ -5,8 +5,6 @@
     LOGS_DIR: /logs
     STATE_FILE: /state/position.txt
     BATCH_DIR: /state/batches
-    CHECK_INTERVAL: ${CHECK_INTERVAL:-30}
-    SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS:-1200}
     WEBHOOK_TIMEOUT: ${WEBHOOK_TIMEOUT:-10}
     WEBHOOK_RETRIES: ${WEBHOOK_RETRIES:-3}
     WEBHOOK_RETRY_BACKOFF: ${WEBHOOK_RETRY_BACKOFF:-2}
@@ -28,6 +26,8 @@ services:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_1}
       SOURCE_NAME: ${SOURCE_NAME_1:-server1}
+      CHECK_INTERVAL: ${CHECK_INTERVAL_1:-30}
+      SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_1:-1200}
 
   dayz-log-monitor-2:
     <<: *monitor-common
@@ -39,6 +39,8 @@ services:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_2}
       SOURCE_NAME: ${SOURCE_NAME_2:-server2}
+      CHECK_INTERVAL: ${CHECK_INTERVAL_2:-30}
+      SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_2:-1200}
 
   dayz-log-monitor-test:
     <<: *monitor-common
@@ -50,6 +52,8 @@ services:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_TEST}
       SOURCE_NAME: ${SOURCE_NAME_TEST:-test}
+      CHECK_INTERVAL: ${CHECK_INTERVAL_TEST:-30}
+      SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_TEST:-1200}
 
   dayz-log-monitor-test-2:
     <<: *monitor-common
@@ -61,3 +65,5 @@ services:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_TEST_2}
       SOURCE_NAME: ${SOURCE_NAME_TEST_2:-test2}
+      CHECK_INTERVAL: ${CHECK_INTERVAL_TEST_2:-30}
+      SEND_INTERVAL_SECONDS: ${SEND_INTERVAL_SECONDS_TEST_2:-1200}
