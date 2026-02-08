@@ -16,6 +16,7 @@ SOURCE_NAME = os.getenv("SOURCE_NAME", "dayz-server").strip() or "dayz-server"
 RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
 RAW_BATCH_DIR = os.getenv("BATCH_DIR", "/state/batches")
 QUIET_HOURS_RANGE_RAW = os.getenv("QUIET_HOURS_RANGE", "").strip()
+SEND_INCLUDE_GROUPS_RAW = os.getenv("SEND_INCLUDE_GROUPS", "").strip()
 FALLBACK_STATE_FILE = "/tmp/dayz-log-monitor/position.txt"
 FALLBACK_BATCH_DIR = "/tmp/dayz-log-monitor/batches"
 
@@ -129,6 +130,22 @@ def parse_quiet_hours_range(value: str) -> Optional[Tuple[int, int]]:
     return start_hour, end_hour
 
 
+def parse_send_include_groups(value: str) -> list[list[str]]:
+    if not value:
+        return []
+
+    groups = []
+    raw_groups = [item.strip() for item in re.split(r"[,;\n|]", value) if item.strip()]
+
+    for raw_group in raw_groups:
+        terms = [term.strip().casefold() for term in re.split(r"\s*\+\s*", raw_group) if term.strip()]
+        if not terms:
+            continue
+        groups.append(terms)
+
+    return groups
+
+
 CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
 WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
 WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
@@ -136,6 +153,7 @@ WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
 SEND_INTERVAL_SECONDS = read_int_env("SEND_INTERVAL_SECONDS", 1200, 1)
 CUSTOM_EXCLUDE_SUBSTRINGS = read_list_env("FILTER_EXCLUDE_SUBSTRINGS")
 QUIET_HOURS_RANGE = parse_quiet_hours_range(QUIET_HOURS_RANGE_RAW)
+SEND_INCLUDE_GROUPS = parse_send_include_groups(SEND_INCLUDE_GROUPS_RAW)
 
 EXCLUDE_SUBSTRINGS = []
 seen_tokens = set()
@@ -380,6 +398,25 @@ def read_batch_lines(batch_file: str) -> list[str]:
     return lines
 
 
+def apply_send_include_filter(lines: list[str]) -> Tuple[list[str], int]:
+    if not SEND_INCLUDE_GROUPS:
+        return lines, 0
+
+    kept_lines = []
+    dropped_count = 0
+
+    for line in lines:
+        line_cf = line.casefold()
+        matched = any(all(term in line_cf for term in group) for group in SEND_INCLUDE_GROUPS)
+
+        if matched:
+            kept_lines.append(line)
+        else:
+            dropped_count += 1
+
+    return kept_lines, dropped_count
+
+
 def send_due_batches(now_dt: datetime, force_send_all: bool = False) -> None:
     for batch_file in list_batch_files():
         age_seconds = batch_age_seconds(batch_file, now_dt)
@@ -392,13 +429,28 @@ def send_due_batches(now_dt: datetime, force_send_all: bool = False) -> None:
             print(f"[info] Removed empty batch file: {os.path.basename(batch_file)}")
             continue
 
+        filtered_batch_lines, filtered_out_count = apply_send_include_filter(batch_lines)
+        if filtered_out_count:
+            print(
+                f"[info] Send-filter excluded {filtered_out_count} lines from "
+                f"{os.path.basename(batch_file)}"
+            )
+
+        if not filtered_batch_lines:
+            os.remove(batch_file)
+            print(
+                f"[info] Removed batch {os.path.basename(batch_file)}: "
+                "no lines matched SEND_INCLUDE_GROUPS"
+            )
+            continue
+
         send_reason = "forced_after_quiet_hours" if force_send_all else "due_interval"
         print(
             f"[info] Sending batch {os.path.basename(batch_file)} "
-            f"({len(batch_lines)} lines, age={age_seconds}s, reason={send_reason})"
+            f"({len(filtered_batch_lines)} lines, age={age_seconds}s, reason={send_reason})"
         )
 
-        delivered = send_to_webhook(batch_lines)
+        delivered = send_to_webhook(filtered_batch_lines)
         if not delivered:
             print(f"[warn] Keeping batch file for retry: {os.path.basename(batch_file)}")
             break
@@ -424,6 +476,7 @@ def monitor_logs() -> None:
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
     print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
+    print(f"Send include groups: {len(SEND_INCLUDE_GROUPS)}")
     print()
 
     last_file, last_position = load_state()
