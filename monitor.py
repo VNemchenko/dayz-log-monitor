@@ -476,7 +476,10 @@ def monitor_logs() -> None:
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
     print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
-    print(f"Send include groups: {len(SEND_INCLUDE_GROUPS)}")
+    if SEND_INCLUDE_GROUPS:
+        print(f"Send include groups: {len(SEND_INCLUDE_GROUPS)}")
+    else:
+        print("Send include groups: <disabled> (all lines pass)")
     print()
 
     last_file, last_position = load_state()
