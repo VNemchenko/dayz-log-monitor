@@ -47,3 +47,14 @@ services:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_TEST}
       SOURCE_NAME: ${SOURCE_NAME_TEST:-test}
+
+  dayz-log-monitor-test-2:
+    <<: *monitor-common
+    container_name: dayz-log-monitor-test-2
+    volumes:
+      - ${LOGS_HOST_PATH_TEST_2}:/logs:ro
+      - ./state/test2:/state
+    environment:
+      <<: *monitor-env
+      WEBHOOK_URL: ${WEBHOOK_URL_TEST_2}
+      SOURCE_NAME: ${SOURCE_NAME_TEST_2:-test2}
