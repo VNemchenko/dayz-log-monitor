@@ -1,6 +1,8 @@
 ﻿#!/usr/bin/env python3
+from __future__ import annotations
 import glob
 import os
+import re
 import time
 from datetime import datetime
 from typing import Optional, Tuple
@@ -12,7 +14,24 @@ LOGS_DIR = os.getenv("LOGS_DIR", "/logs")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
 SOURCE_NAME = os.getenv("SOURCE_NAME", "dayz-server").strip() or "dayz-server"
 RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
+RAW_BATCH_DIR = os.getenv("BATCH_DIR", "/state/batches")
 FALLBACK_STATE_FILE = "/tmp/dayz-log-monitor/position.txt"
+FALLBACK_BATCH_DIR = "/tmp/dayz-log-monitor/batches"
+
+DEFAULT_EXCLUDE_SUBSTRINGS = [
+    "****************",
+    "#####",
+    "connected",
+    "EmoteSitA",
+    "AdminLog",
+    "built",
+    "placed",
+    ")):",
+    "packed",
+    "Dug in",
+    "Dug out",
+    "choosing to respawn",
+]
 
 
 def read_int_env(name: str, default: int, min_value: int = 1) -> int:
@@ -30,18 +49,25 @@ def read_int_env(name: str, default: int, min_value: int = 1) -> int:
     return value
 
 
-CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
-WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
-WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
-WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
+def read_list_env(name: str) -> list[str]:
+    raw_value = os.getenv(name, "")
+    if not raw_value:
+        return []
+
+    values = []
+    for item in re.split(r"[,;\n]", raw_value):
+        cleaned = item.strip()
+        if cleaned:
+            values.append(cleaned)
+
+    return values
 
 
-def resolve_state_file(path: str) -> str:
-    state_dir = os.path.dirname(path) or "."
-    probe_file = os.path.join(state_dir, ".write-test")
+def resolve_writable_dir(path: str, fallback_path: str, label: str) -> str:
+    probe_file = os.path.join(path, ".write-test")
 
     try:
-        os.makedirs(state_dir, exist_ok=True)
+        os.makedirs(path, exist_ok=True)
         with open(probe_file, "w", encoding="utf-8"):
             pass
         os.remove(probe_file)
@@ -53,16 +79,53 @@ def resolve_state_file(path: str) -> str:
         except OSError:
             pass
 
-        fallback_dir = os.path.dirname(FALLBACK_STATE_FILE)
-        os.makedirs(fallback_dir, exist_ok=True)
+        os.makedirs(fallback_path, exist_ok=True)
         print(
-            f"[warn] STATE_FILE {path} is not writable ({exc}). "
-            f"Using volatile fallback {FALLBACK_STATE_FILE}."
+            f"[warn] {label} {path} is not writable ({exc}). "
+            f"Using fallback {fallback_path}."
         )
-        return FALLBACK_STATE_FILE
+        return fallback_path
 
 
+def resolve_state_file(path: str) -> str:
+    state_dir = os.path.dirname(path) or "."
+    fallback_state_dir = os.path.dirname(FALLBACK_STATE_FILE)
+    resolved_state_dir = resolve_writable_dir(state_dir, fallback_state_dir, "STATE_FILE dir")
+
+    if os.path.normpath(resolved_state_dir) == os.path.normpath(state_dir):
+        return path
+
+    return FALLBACK_STATE_FILE
+
+
+def sanitize_source_name(value: str) -> str:
+    sanitized = re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("_")
+    return sanitized or "dayz-server"
+
+
+CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
+WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
+WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
+WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
+SEND_INTERVAL_SECONDS = read_int_env("SEND_INTERVAL_SECONDS", 1200, 1)
+CUSTOM_EXCLUDE_SUBSTRINGS = read_list_env("FILTER_EXCLUDE_SUBSTRINGS")
+
+EXCLUDE_SUBSTRINGS = []
+seen_tokens = set()
+for token in DEFAULT_EXCLUDE_SUBSTRINGS + CUSTOM_EXCLUDE_SUBSTRINGS:
+    token_cf = token.casefold()
+    if token_cf in seen_tokens:
+        continue
+    seen_tokens.add(token_cf)
+    EXCLUDE_SUBSTRINGS.append(token)
+
+EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in EXCLUDE_SUBSTRINGS]
+SAFE_SOURCE_NAME = sanitize_source_name(SOURCE_NAME)
 STATE_FILE = resolve_state_file(RAW_STATE_FILE)
+BATCH_DIR = resolve_writable_dir(RAW_BATCH_DIR, FALLBACK_BATCH_DIR, "BATCH_DIR")
+BATCH_FILENAME_RE = re.compile(
+    rf"^{re.escape(SAFE_SOURCE_NAME)}_(\d{{8}}_\d{{6}})(?:_\d+)?\.log$"
+)
 
 
 def mask_secret(secret: str) -> str:
@@ -189,6 +252,115 @@ def read_new_content(filepath: str, last_position: int) -> Tuple[list[str], int]
     return new_lines, new_position
 
 
+def filter_log_lines(lines: list[str]) -> Tuple[list[str], int]:
+    kept_lines = []
+    dropped_count = 0
+
+    for line in lines:
+        line_cf = line.casefold()
+        if any(token in line_cf for token in EXCLUDE_SUBSTRINGS_CASEFOLD):
+            dropped_count += 1
+            continue
+        kept_lines.append(line)
+
+    return kept_lines, dropped_count
+
+
+def list_batch_files() -> list[str]:
+    pattern = os.path.join(BATCH_DIR, f"{SAFE_SOURCE_NAME}_*.log")
+    return sorted(glob.glob(pattern))
+
+
+def parse_batch_started_at(filepath: str) -> datetime:
+    filename = os.path.basename(filepath)
+    match = BATCH_FILENAME_RE.match(filename)
+    if match:
+        timestamp_raw = match.group(1)
+        try:
+            return datetime.strptime(timestamp_raw, "%Y%m%d_%H%M%S")
+        except ValueError:
+            pass
+
+    return datetime.fromtimestamp(os.path.getmtime(filepath))
+
+
+def batch_age_seconds(filepath: str, now_dt: datetime) -> int:
+    started_at = parse_batch_started_at(filepath)
+    return int((now_dt - started_at).total_seconds())
+
+
+def create_batch_file(now_dt: datetime) -> str:
+    timestamp = now_dt.strftime("%Y%m%d_%H%M%S")
+    base_path = os.path.join(BATCH_DIR, f"{SAFE_SOURCE_NAME}_{timestamp}")
+    batch_path = f"{base_path}.log"
+    suffix = 1
+
+    while os.path.exists(batch_path):
+        batch_path = f"{base_path}_{suffix:02d}.log"
+        suffix += 1
+
+    with open(batch_path, "a", encoding="utf-8"):
+        pass
+
+    return batch_path
+
+
+def get_batch_file_for_append(now_dt: datetime) -> str:
+    batch_files = list_batch_files()
+
+    if not batch_files:
+        return create_batch_file(now_dt)
+
+    latest_batch = batch_files[-1]
+    if batch_age_seconds(latest_batch, now_dt) >= SEND_INTERVAL_SECONDS:
+        return create_batch_file(now_dt)
+
+    return latest_batch
+
+
+def append_lines_to_batch(lines: list[str], now_dt: datetime) -> str:
+    batch_file = get_batch_file_for_append(now_dt)
+
+    with open(batch_file, "a", encoding="utf-8") as batch_handle:
+        for line in lines:
+            batch_handle.write(f"{line}\n")
+
+    return batch_file
+
+
+def read_batch_lines(batch_file: str) -> list[str]:
+    with open(batch_file, "r", encoding="utf-8", errors="ignore") as batch_handle:
+        lines = [line.rstrip("\n\r") for line in batch_handle if line.strip()]
+
+    return lines
+
+
+def send_due_batches(now_dt: datetime) -> None:
+    for batch_file in list_batch_files():
+        age_seconds = batch_age_seconds(batch_file, now_dt)
+        if age_seconds < SEND_INTERVAL_SECONDS:
+            continue
+
+        batch_lines = read_batch_lines(batch_file)
+        if not batch_lines:
+            os.remove(batch_file)
+            print(f"[info] Removed empty batch file: {os.path.basename(batch_file)}")
+            continue
+
+        print(
+            f"[info] Sending batch {os.path.basename(batch_file)} "
+            f"({len(batch_lines)} lines, age={age_seconds}s)"
+        )
+
+        delivered = send_to_webhook(batch_lines)
+        if not delivered:
+            print(f"[warn] Keeping batch file for retry: {os.path.basename(batch_file)}")
+            break
+
+        os.remove(batch_file)
+        print(f"[ok] Batch sent and removed: {os.path.basename(batch_file)}")
+
+
 def monitor_logs() -> None:
     """Main monitoring loop."""
     print("=== DayZ Log Monitor started ===")
@@ -196,20 +368,26 @@ def monitor_logs() -> None:
     print(f"Source name: {SOURCE_NAME}")
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     print(f"Check interval: {CHECK_INTERVAL}s")
+    print(f"Send interval: {SEND_INTERVAL_SECONDS}s")
     print(f"State file: {STATE_FILE}")
+    print(f"Batch dir: {BATCH_DIR}")
     print(
         f"Webhook timeout: {WEBHOOK_TIMEOUT}s, "
         f"retries: {WEBHOOK_RETRIES}, "
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
+    print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
     print()
 
     last_file, last_position = load_state()
 
     while True:
-        try:
-            current_file = get_latest_log_file()
+        now_dt = datetime.now()
 
+        try:
+            send_due_batches(now_dt)
+
+            current_file = get_latest_log_file()
             if not current_file:
                 print("[warn] No DayZ log files found, waiting...")
                 time.sleep(CHECK_INTERVAL)
@@ -231,12 +409,19 @@ def monitor_logs() -> None:
 
                 if new_position > last_position:
                     if new_lines:
-                        print(f"[info] Found {len(new_lines)} new non-empty log lines")
-                        delivered = send_to_webhook(new_lines)
-                        if not delivered:
-                            print("[warn] Keeping current offset to retry delivery next cycle")
-                            time.sleep(CHECK_INTERVAL)
-                            continue
+                        kept_lines, dropped_count = filter_log_lines(new_lines)
+                        if dropped_count:
+                            print(
+                                f"[info] Filtered out {dropped_count} lines "
+                                f"by exclude substrings"
+                            )
+
+                        if kept_lines:
+                            batch_file = append_lines_to_batch(kept_lines, now_dt)
+                            print(
+                                f"[info] Appended {len(kept_lines)} lines to "
+                                f"{os.path.basename(batch_file)}"
+                            )
 
                     last_position = new_position
                     save_state(last_file, last_position)
@@ -253,3 +438,4 @@ if __name__ == "__main__":
         raise SystemExit(1)
 
     monitor_logs()
+
