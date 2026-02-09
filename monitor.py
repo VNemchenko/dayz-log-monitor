@@ -159,10 +159,10 @@ CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
 WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
 WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
 WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
-SEND_INTERVAL_SECONDS = read_int_env("SEND_INTERVAL_SECONDS", 1200, 1)
 CUSTOM_EXCLUDE_SUBSTRINGS = read_list_env("FILTER_EXCLUDE_SUBSTRINGS")
 QUIET_HOURS_RANGE = parse_quiet_hours_range(QUIET_HOURS_RANGE_RAW)
 SEND_INCLUDE_GROUPS = parse_send_include_groups(SEND_INCLUDE_GROUPS_RAW)
+SEND_INCLUDE_GROUPS_ENABLED = bool(SEND_INCLUDE_GROUPS)
 
 EXCLUDE_SUBSTRINGS = []
 seen_tokens = set()
@@ -177,14 +177,13 @@ EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in EXCLUDE_SUBSTRINGS]
 SAFE_SOURCE_NAME = sanitize_source_name(SOURCE_NAME)
 STATE_FILE = resolve_state_file(RAW_STATE_FILE)
 BATCH_DIR = resolve_writable_dir(RAW_BATCH_DIR, FALLBACK_BATCH_DIR, "BATCH_DIR")
-BATCH_FILENAME_RE = re.compile(
-    rf"^{re.escape(SAFE_SOURCE_NAME)}_(\d{{8}}_\d{{6}})(?:_\d+)?\.log$"
-)
 
 if QUIET_HOURS_RANGE:
     QUIET_HOURS_LABEL = f"{QUIET_HOURS_RANGE[0]:02d}-{QUIET_HOURS_RANGE[1]:02d}"
 else:
     QUIET_HOURS_LABEL = "<disabled>"
+
+TRIGGER_READY_TO_SEND = 2
 
 
 def mask_secret(secret: str) -> str:
@@ -206,17 +205,17 @@ def get_latest_log_file() -> Optional[str]:
     return max(files, key=os.path.getmtime)
 
 
-def load_state() -> Tuple[Optional[str], int]:
-    """Load monitor state (file path + byte offset)."""
+def load_state() -> Tuple[Optional[str], int, int, bool]:
+    """Load monitor state (file path + byte offset + trigger state + sleepy flag)."""
     if not os.path.exists(STATE_FILE):
-        return None, 0
+        return None, 0, 0, False
 
     try:
         with open(STATE_FILE, "r", encoding="utf-8") as state_handle:
             rows = state_handle.read().splitlines()
 
         if not rows:
-            return None, 0
+            return None, 0, 0, False
 
         filepath = rows[0].strip() or None
         if len(rows) >= 2 and rows[1].strip():
@@ -224,16 +223,30 @@ def load_state() -> Tuple[Optional[str], int]:
         else:
             position = 0
 
+        if len(rows) >= 3 and rows[2].strip():
+            trigger_state = int(rows[2].strip())
+        else:
+            trigger_state = 0
+
+        if len(rows) >= 4 and rows[3].strip():
+            sleepy_pending = bool(int(rows[3].strip()))
+        else:
+            sleepy_pending = False
+
         if position < 0:
             raise ValueError("position must be non-negative")
+        if trigger_state < 0:
+            raise ValueError("trigger_state must be non-negative")
+        if len(rows) >= 4 and rows[3].strip() and rows[3].strip() not in {"0", "1"}:
+            raise ValueError("sleepy flag must be 0 or 1")
 
-        return filepath, position
+        return filepath, position, trigger_state, sleepy_pending
     except (OSError, ValueError) as exc:
         print(f"[warn] Failed to load state from {STATE_FILE}: {exc}. Starting from 0.")
-        return None, 0
+        return None, 0, 0, False
 
 
-def save_state(filepath: str, position: int) -> None:
+def save_state(filepath: str, position: int, trigger_state: int, sleepy_pending: bool) -> None:
     """Save monitor state atomically."""
     if not filepath:
         return
@@ -242,12 +255,14 @@ def save_state(filepath: str, position: int) -> None:
     temp_state_file = f"{STATE_FILE}.tmp"
 
     with open(temp_state_file, "w", encoding="utf-8") as state_handle:
-        state_handle.write(f"{filepath}\n{position}\n")
+        state_handle.write(
+            f"{filepath}\n{position}\n{trigger_state}\n{1 if sleepy_pending else 0}\n"
+        )
 
     os.replace(temp_state_file, STATE_FILE)
 
 
-def send_to_webhook(lines: list[str]) -> bool:
+def send_to_webhook(lines: list[str], sleepy: bool) -> bool:
     """Send lines to webhook and return delivery status."""
     if not lines:
         return True
@@ -260,6 +275,7 @@ def send_to_webhook(lines: list[str]) -> bool:
         "timestamp": datetime.now().isoformat(),
         "source": SOURCE_NAME,
         "count": len(lines),
+        "SLEEPY": sleepy,
         "logs": lines,
     }
 
@@ -330,24 +346,6 @@ def list_batch_files() -> list[str]:
     return sorted(glob.glob(pattern))
 
 
-def parse_batch_started_at(filepath: str) -> datetime:
-    filename = os.path.basename(filepath)
-    match = BATCH_FILENAME_RE.match(filename)
-    if match:
-        timestamp_raw = match.group(1)
-        try:
-            return datetime.strptime(timestamp_raw, "%Y%m%d_%H%M%S")
-        except ValueError:
-            pass
-
-    return datetime.fromtimestamp(os.path.getmtime(filepath))
-
-
-def batch_age_seconds(filepath: str, now_dt: datetime) -> int:
-    started_at = parse_batch_started_at(filepath)
-    return int((now_dt - started_at).total_seconds())
-
-
 def is_in_quiet_hours(now_dt: datetime) -> bool:
     if not QUIET_HOURS_RANGE:
         return False
@@ -383,11 +381,7 @@ def get_batch_file_for_append(now_dt: datetime) -> str:
     if not batch_files:
         return create_batch_file(now_dt)
 
-    latest_batch = batch_files[-1]
-    if batch_age_seconds(latest_batch, now_dt) >= SEND_INTERVAL_SECONDS:
-        return create_batch_file(now_dt)
-
-    return latest_batch
+    return batch_files[-1]
 
 
 def append_lines_to_batch(lines: list[str], now_dt: datetime) -> str:
@@ -407,80 +401,70 @@ def read_batch_lines(batch_file: str) -> list[str]:
     return lines
 
 
-def apply_send_include_filter(lines: list[str]) -> Tuple[list[str], int]:
-    if not SEND_INCLUDE_GROUPS:
-        return lines, 0
-
-    kept_lines = []
-    dropped_count = 0
+def batch_has_send_include_match(lines: list[str]) -> bool:
+    if not SEND_INCLUDE_GROUPS_ENABLED:
+        # Include filter disabled: all lines are eligible for trigger matching.
+        return True
 
     for line in lines:
         line_cf = line.casefold()
-        matched = any(all(term in line_cf for term in group) for group in SEND_INCLUDE_GROUPS)
+        if any(all(term in line_cf for term in group) for group in SEND_INCLUDE_GROUPS):
+            return True
 
-        if matched:
-            kept_lines.append(line)
-        else:
-            dropped_count += 1
-
-    return kept_lines, dropped_count
+    return False
 
 
-def send_due_batches(now_dt: datetime, force_send_all: bool = False) -> None:
-    for batch_file in list_batch_files():
-        age_seconds = batch_age_seconds(batch_file, now_dt)
-        send_due_to_quiet_release = False
-        if QUIET_HOURS_RANGE and not force_send_all and not is_in_quiet_hours(now_dt):
-            batch_started_at = parse_batch_started_at(batch_file)
-            if is_in_quiet_hours(batch_started_at):
-                send_due_to_quiet_release = True
+def update_trigger_state(trigger_state: int, batch_has_match: bool) -> int:
+    if not SEND_INCLUDE_GROUPS_ENABLED:
+        # No include groups configured: any non-empty processed batch should be sent.
+        return TRIGGER_READY_TO_SEND
 
-        if (
-            not force_send_all
-            and not send_due_to_quiet_release
-            and age_seconds < SEND_INTERVAL_SECONDS
-        ):
-            continue
+    if trigger_state <= 0:
+        return 1 if batch_has_match else 0
 
+    if trigger_state == 1:
+        return 1 if batch_has_match else TRIGGER_READY_TO_SEND
+
+    return trigger_state
+
+
+def flush_all_batches(send_reason: str, sleepy: bool) -> bool:
+    batch_files = list_batch_files()
+    if not batch_files:
+        print("[info] Trigger fired but no batch files found.")
+        return True
+
+    files_with_data = []
+    all_lines = []
+
+    for batch_file in batch_files:
         batch_lines = read_batch_lines(batch_file)
         if not batch_lines:
             os.remove(batch_file)
             print(f"[info] Removed empty batch file: {os.path.basename(batch_file)}")
             continue
 
-        filtered_batch_lines, filtered_out_count = apply_send_include_filter(batch_lines)
-        if filtered_out_count:
-            print(
-                f"[info] Send-filter excluded {filtered_out_count} lines from "
-                f"{os.path.basename(batch_file)}"
-            )
+        files_with_data.append(batch_file)
+        all_lines.extend(batch_lines)
 
-        if not filtered_batch_lines:
-            os.remove(batch_file)
-            print(
-                f"[info] Removed batch {os.path.basename(batch_file)}: "
-                "no lines matched SEND_INCLUDE_GROUPS"
-            )
-            continue
+    if not all_lines:
+        return True
 
-        if force_send_all:
-            send_reason = "forced_after_quiet_hours"
-        elif send_due_to_quiet_release:
-            send_reason = "quiet_hours_backlog_release"
-        else:
-            send_reason = "due_interval"
-        print(
-            f"[info] Sending batch {os.path.basename(batch_file)} "
-            f"({len(filtered_batch_lines)} lines, age={age_seconds}s, reason={send_reason})"
-        )
+    print(
+        "[info] Sending accumulated logs "
+        f"({len(all_lines)} lines, files={len(files_with_data)}, reason={send_reason}, "
+        f"SLEEPY={sleepy})"
+    )
+    delivered = send_to_webhook(all_lines, sleepy=sleepy)
+    if not delivered:
+        print("[warn] Keeping accumulated batch files for retry")
+        return False
 
-        delivered = send_to_webhook(filtered_batch_lines)
-        if not delivered:
-            print(f"[warn] Keeping batch file for retry: {os.path.basename(batch_file)}")
-            break
-
+    for batch_file in files_with_data:
         os.remove(batch_file)
-        print(f"[ok] Batch sent and removed: {os.path.basename(batch_file)}")
+
+    print(f"[ok] Sent and removed {len(files_with_data)} batch files")
+    return True
 
 
 def monitor_logs() -> None:
@@ -490,8 +474,9 @@ def monitor_logs() -> None:
     print(f"Source name: {SOURCE_NAME}")
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     print(f"Check interval: {CHECK_INTERVAL}s")
-    print(f"Send interval: {SEND_INTERVAL_SECONDS}s")
+    print("Send mode: trigger-based (send when trigger reaches 2)")
     print(f"Quiet hours: {QUIET_HOURS_LABEL}")
+    print("Sleepy trigger: enabled (SLEEPY=true after quiet hours, resets after first send)")
     print(f"State file: {STATE_FILE}")
     print(f"Batch dir: {BATCH_DIR}")
     print(
@@ -500,14 +485,15 @@ def monitor_logs() -> None:
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
     print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
-    if SEND_INCLUDE_GROUPS:
+    if SEND_INCLUDE_GROUPS_ENABLED:
         print(f"Send include groups: {len(SEND_INCLUDE_GROUPS)}")
     else:
-        print("Send include groups: <disabled> (all lines pass)")
+        print("Send include groups: <disabled> (all lines can trigger send)")
     print()
 
-    last_file, last_position = load_state()
+    last_file, last_position, trigger_state, sleepy_pending = load_state()
     was_in_quiet_hours = False
+    trigger_waiting_in_quiet_logged = False
 
     while True:
         now_dt = datetime.now()
@@ -515,22 +501,56 @@ def monitor_logs() -> None:
         try:
             in_quiet_hours = is_in_quiet_hours(now_dt)
 
+            if (
+                not SEND_INCLUDE_GROUPS_ENABLED
+                and trigger_state < TRIGGER_READY_TO_SEND
+                and list_batch_files()
+            ):
+                trigger_state = TRIGGER_READY_TO_SEND
+                print(
+                    "[info] Include groups are disabled and batch files exist; "
+                    "trigger set to 2."
+                )
+
             if in_quiet_hours:
                 if not was_in_quiet_hours:
+                    sleepy_pending = True
                     print(
                         "[info] Entered quiet hours window "
                         f"({QUIET_HOURS_LABEL}); sending paused."
                     )
+                    print("[info] SLEEPY set to true for next successful send.")
+                    save_state(last_file, last_position, trigger_state, sleepy_pending)
             else:
                 if was_in_quiet_hours:
                     print(
-                        "[info] Quiet hours ended; sending all accumulated batches now."
+                        "[info] Quiet hours ended."
                     )
-                    send_due_batches(now_dt, force_send_all=True)
-                else:
-                    send_due_batches(now_dt)
 
             was_in_quiet_hours = in_quiet_hours
+
+            if trigger_state >= TRIGGER_READY_TO_SEND:
+                if in_quiet_hours:
+                    if not trigger_waiting_in_quiet_logged:
+                        print(
+                            "[info] Trigger is armed (2), waiting for quiet hours to end "
+                            "before sending."
+                        )
+                        trigger_waiting_in_quiet_logged = True
+                else:
+                    trigger_waiting_in_quiet_logged = False
+                    delivered = flush_all_batches("trigger_ready", sleepy=sleepy_pending)
+                    if delivered:
+                        if sleepy_pending:
+                            print("[info] SLEEPY reset to false after successful send.")
+                            sleepy_pending = False
+                        trigger_state = 0
+                        print("[info] Trigger reset: 2 -> 0")
+                        save_state(last_file, last_position, trigger_state, sleepy_pending)
+                    else:
+                        print("[warn] Trigger remains armed due to delivery failure")
+            else:
+                trigger_waiting_in_quiet_logged = False
 
             current_file = get_latest_log_file()
             if not current_file:
@@ -568,8 +588,40 @@ def monitor_logs() -> None:
                                 f"{os.path.basename(batch_file)}"
                             )
 
+                            has_trigger_match = batch_has_send_include_match(kept_lines)
+                            previous_trigger = trigger_state
+                            trigger_state = update_trigger_state(trigger_state, has_trigger_match)
+                            if trigger_state != previous_trigger:
+                                print(
+                                    f"[info] Trigger updated: {previous_trigger} -> {trigger_state} "
+                                    f"(matched={has_trigger_match})"
+                                )
+
+                            if trigger_state >= TRIGGER_READY_TO_SEND:
+                                if in_quiet_hours:
+                                    print(
+                                        "[info] Trigger reached 2 during quiet hours; "
+                                        "sending will start after quiet window."
+                                    )
+                                else:
+                                    delivered = flush_all_batches(
+                                        "trigger_reached", sleepy=sleepy_pending
+                                    )
+                                    if delivered:
+                                        if sleepy_pending:
+                                            print(
+                                                "[info] SLEEPY reset to false after successful send."
+                                            )
+                                            sleepy_pending = False
+                                        trigger_state = 0
+                                        print("[info] Trigger reset: 2 -> 0")
+                                    else:
+                                        print(
+                                            "[warn] Trigger remains armed due to delivery failure"
+                                        )
+
                     last_position = new_position
-                    save_state(last_file, last_position)
+                    save_state(last_file, last_position, trigger_state, sleepy_pending)
 
         except Exception as exc:
             print(f"[error] Unexpected error: {exc}")
