@@ -1,5 +1,6 @@
 ﻿#!/usr/bin/env python3
 from __future__ import annotations
+import builtins
 import glob
 import os
 import re
@@ -8,6 +9,14 @@ from datetime import datetime
 from typing import Optional, Tuple
 
 import requests
+
+
+def print_with_timestamp(*args, **kwargs) -> None:
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    builtins.print(f"[{timestamp}]", *args, **kwargs)
+
+
+print = print_with_timestamp
 
 
 LOGS_DIR = os.getenv("LOGS_DIR", "/logs")
@@ -420,7 +429,17 @@ def apply_send_include_filter(lines: list[str]) -> Tuple[list[str], int]:
 def send_due_batches(now_dt: datetime, force_send_all: bool = False) -> None:
     for batch_file in list_batch_files():
         age_seconds = batch_age_seconds(batch_file, now_dt)
-        if not force_send_all and age_seconds < SEND_INTERVAL_SECONDS:
+        send_due_to_quiet_release = False
+        if QUIET_HOURS_RANGE and not force_send_all and not is_in_quiet_hours(now_dt):
+            batch_started_at = parse_batch_started_at(batch_file)
+            if is_in_quiet_hours(batch_started_at):
+                send_due_to_quiet_release = True
+
+        if (
+            not force_send_all
+            and not send_due_to_quiet_release
+            and age_seconds < SEND_INTERVAL_SECONDS
+        ):
             continue
 
         batch_lines = read_batch_lines(batch_file)
@@ -444,7 +463,12 @@ def send_due_batches(now_dt: datetime, force_send_all: bool = False) -> None:
             )
             continue
 
-        send_reason = "forced_after_quiet_hours" if force_send_all else "due_interval"
+        if force_send_all:
+            send_reason = "forced_after_quiet_hours"
+        elif send_due_to_quiet_release:
+            send_reason = "quiet_hours_backlog_release"
+        else:
+            send_reason = "due_interval"
         print(
             f"[info] Sending batch {os.path.basename(batch_file)} "
             f"({len(filtered_batch_lines)} lines, age={age_seconds}s, reason={send_reason})"
