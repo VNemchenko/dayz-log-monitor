@@ -9,14 +9,18 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 1. Every `CHECK_INTERVAL` seconds, the monitor checks the newest `DayZServer_*.ADM` file.
 2. It resumes reading from saved byte position (`STATE_FILE`) and keeps trigger state there.
 3. Empty lines are removed.
-4. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
+4. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
 5. Remaining lines are deduplicated by message tail:
    - if line has `|`, only text after the first `|` is used as dedupe key
    - if line has no `|`, full line is used
-6. Kept unique lines are appended into a batch file in `BATCH_DIR`.
-7. On service startup, lines older than `ROTATE_MINUTES` are pruned from batch storage before any send attempt.
-8. During runtime, while `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
-9. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
+6. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
+7. Before appending to batch, each `Player "Name"(id=...)` token is normalized using the DB:
+   - name is replaced with persisted DB name
+   - `id=...` is removed from the log line
+8. Kept unique lines are appended into a batch file in `BATCH_DIR`.
+9. On service startup, lines older than `ROTATE_MINUTES` are pruned from batch storage before any send attempt.
+10. During runtime, while `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
+11. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
    - Trigger starts at `0`.
    - If batch has include-group match:
      - `0 -> 1`
@@ -24,11 +28,11 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
    - If batch has no include-group match:
      - `0 -> 0`
      - `1 -> 2`
-10. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
-11. Trigger resets to `0` after successful send.
-12. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
-13. On entering quiet hours, internal `SLEEPY` is set to `true`.
-14. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
+12. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
+13. Trigger resets to `0` after successful send.
+14. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
+15. On entering quiet hours, internal `SLEEPY` is set to `true`.
+16. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
 
@@ -62,6 +66,40 @@ If `SEND_INCLUDE_GROUPS_*` is empty, include filter is disabled and all processe
     "line 1",
     "line 2"
   ]
+}
+```
+
+## Players DB
+
+The service keeps a JSON DB keyed by player ID. It is updated from raw lines containing patterns like `Player "Name"(id=HASH)`.
+
+Naming rules for new IDs:
+
+- If observed name contains `Survivor`, persisted name is `Survivor{index}`.
+- If observed name does not contain `Survivor`, persisted name is original name.
+- If original name is already used by another ID, persisted name is `{name}{index}`.
+
+Example:
+
+```json
+{
+  "source": "cherno",
+  "updated_at": "2026-02-09T12:34:56.789012",
+  "count": 2,
+  "players": {
+    "HASH_1": {
+      "index": 1,
+      "name": "PlayerOne",
+      "raw_name": "PlayerOne",
+      "aliases": ["PlayerOne"]
+    },
+    "HASH_2": {
+      "index": 2,
+      "name": "Survivor2",
+      "raw_name": "Survivor (2)",
+      "aliases": ["Survivor", "Survivor (2)"]
+    }
+  }
 }
 ```
 
@@ -118,6 +156,7 @@ docker compose logs -f
 
 - `TZ` - container timezone used for quiet hours and timestamps (example: `Europe/Moscow`)
 - `ROTATE_MINUTES` - retention window for unsent batch lines when `trigger=0` and `SLEEPY=false` (default `60`)
+- `PLAYERS_DB_FILE` - path to JSON file with player ID/name mapping (default `/state/players.json`)
 - `WEBHOOK_TIMEOUT` - HTTP timeout seconds (default `10`)
 - `WEBHOOK_RETRIES` - retries per webhook request (default `3`)
 - `WEBHOOK_RETRY_BACKOFF` - linear retry backoff base seconds (default `2`)

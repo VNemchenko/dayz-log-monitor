@@ -2,6 +2,7 @@
 from __future__ import annotations
 import builtins
 import glob
+import json
 import os
 import re
 import time
@@ -24,10 +25,12 @@ WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
 SOURCE_NAME = os.getenv("SOURCE_NAME", "dayz-server").strip() or "dayz-server"
 RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
 RAW_BATCH_DIR = os.getenv("BATCH_DIR", "/state/batches")
+RAW_PLAYERS_DB_FILE = os.getenv("PLAYERS_DB_FILE", "/state/players.json")
 QUIET_HOURS_RANGE_RAW = os.getenv("QUIET_HOURS_RANGE", "").strip()
 SEND_INCLUDE_GROUPS_RAW = os.getenv("SEND_INCLUDE_GROUPS", "").strip()
 FALLBACK_STATE_FILE = "/tmp/dayz-log-monitor/position.txt"
 FALLBACK_BATCH_DIR = "/tmp/dayz-log-monitor/batches"
+FALLBACK_PLAYERS_DB_FILE = "/tmp/dayz-log-monitor/players.json"
 
 DEFAULT_EXCLUDE_SUBSTRINGS = [
     "****************",
@@ -109,6 +112,17 @@ def resolve_state_file(path: str) -> str:
     return FALLBACK_STATE_FILE
 
 
+def resolve_players_db_file(path: str) -> str:
+    db_dir = os.path.dirname(path) or "."
+    fallback_db_dir = os.path.dirname(FALLBACK_PLAYERS_DB_FILE)
+    resolved_db_dir = resolve_writable_dir(db_dir, fallback_db_dir, "PLAYERS_DB_FILE dir")
+
+    if os.path.normpath(resolved_db_dir) == os.path.normpath(db_dir):
+        return path
+
+    return FALLBACK_PLAYERS_DB_FILE
+
+
 def sanitize_source_name(value: str) -> str:
     sanitized = re.sub(r"[^A-Za-z0-9._-]+", "_", value).strip("_")
     return sanitized or "dayz-server"
@@ -178,6 +192,7 @@ EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in EXCLUDE_SUBSTRINGS]
 SAFE_SOURCE_NAME = sanitize_source_name(SOURCE_NAME)
 STATE_FILE = resolve_state_file(RAW_STATE_FILE)
 BATCH_DIR = resolve_writable_dir(RAW_BATCH_DIR, FALLBACK_BATCH_DIR, "BATCH_DIR")
+PLAYERS_DB_FILE = resolve_players_db_file(RAW_PLAYERS_DB_FILE)
 
 if QUIET_HOURS_RANGE:
     QUIET_HOURS_LABEL = f"{QUIET_HOURS_RANGE[0]:02d}-{QUIET_HOURS_RANGE[1]:02d}"
@@ -186,6 +201,13 @@ else:
 
 TRIGGER_READY_TO_SEND = 2
 BATCH_ROTATE_SECONDS = ROTATE_MINUTES * 60
+PLAYER_ID_PAIR_RE = re.compile(
+    r'Player\s+"(?P<name>[^"]+)"\s*(?:\([^)]*\)\s*)*\(id=(?P<id>[^)\s]+)'
+)
+PLAYER_TOKEN_RE = re.compile(
+    r'Player\s+"(?P<name>[^"]+)"(?P<prefix>\s*(?:\([^)]*\)\s*)*)'
+    r'\(id=(?P<id>[^)\s]+)(?P<tail>[^)]*)\)'
+)
 
 
 def mask_secret(secret: str) -> str:
@@ -262,6 +284,303 @@ def save_state(filepath: str, position: int, trigger_state: int, sleepy_pending:
         )
 
     os.replace(temp_state_file, STATE_FILE)
+
+
+def load_players_db() -> dict[str, dict[str, object]]:
+    if not os.path.exists(PLAYERS_DB_FILE):
+        return {}
+
+    try:
+        with open(PLAYERS_DB_FILE, "r", encoding="utf-8") as db_handle:
+            raw_data = json.load(db_handle)
+    except (OSError, json.JSONDecodeError) as exc:
+        print(f"[warn] Failed to load players DB from {PLAYERS_DB_FILE}: {exc}. Starting empty.")
+        return {}
+
+    if not isinstance(raw_data, dict):
+        print(f"[warn] Invalid players DB format in {PLAYERS_DB_FILE}: root must be object.")
+        return {}
+
+    raw_players = raw_data.get("players", raw_data)
+    if not isinstance(raw_players, dict):
+        print(f"[warn] Invalid players DB format in {PLAYERS_DB_FILE}: 'players' must be object.")
+        return {}
+
+    players_db: dict[str, dict[str, object]] = {}
+    used_indexes: set[int] = set()
+    for player_id, raw_entry in raw_players.items():
+        if not isinstance(player_id, str):
+            continue
+        normalized_id = player_id.strip()
+        if not normalized_id:
+            continue
+
+        if isinstance(raw_entry, str):
+            player_name = raw_entry.strip()
+            if not player_name:
+                continue
+            players_db[normalized_id] = {
+                "name": player_name,
+                "raw_name": player_name,
+                "aliases": [player_name],
+            }
+            continue
+
+        if not isinstance(raw_entry, dict):
+            continue
+
+        raw_name = raw_entry.get("name")
+        if not isinstance(raw_name, str) or not raw_name.strip():
+            continue
+        player_name = raw_name.strip()
+
+        aliases: list[str] = []
+        raw_aliases = raw_entry.get("aliases")
+        if isinstance(raw_aliases, list):
+            for alias in raw_aliases:
+                if isinstance(alias, str):
+                    alias_clean = alias.strip()
+                    if alias_clean and alias_clean not in aliases:
+                        aliases.append(alias_clean)
+        if player_name not in aliases:
+            aliases.insert(0, player_name)
+
+        entry: dict[str, object] = {
+            "name": player_name,
+            "raw_name": str(raw_entry.get("raw_name", player_name)).strip() or player_name,
+            "aliases": aliases,
+        }
+
+        raw_index = raw_entry.get("index")
+        if isinstance(raw_index, int) and raw_index > 0 and raw_index not in used_indexes:
+            entry["index"] = raw_index
+            used_indexes.add(raw_index)
+
+        last_seen = raw_entry.get("last_seen")
+        if isinstance(last_seen, str) and last_seen.strip():
+            entry["last_seen"] = last_seen.strip()
+
+        players_db[normalized_id] = entry
+
+    next_index = 1
+    for player_id in sorted(players_db):
+        entry = players_db[player_id]
+        if isinstance(entry.get("index"), int) and entry["index"] > 0:
+            continue
+
+        while next_index in used_indexes:
+            next_index += 1
+        entry["index"] = next_index
+        used_indexes.add(next_index)
+        next_index += 1
+
+    return players_db
+
+
+def save_players_db(players_db: dict[str, dict[str, object]], now_dt: datetime) -> None:
+    os.makedirs(os.path.dirname(PLAYERS_DB_FILE) or ".", exist_ok=True)
+    temp_db_file = f"{PLAYERS_DB_FILE}.tmp"
+
+    normalized_players: dict[str, dict[str, object]] = {}
+    for player_id in sorted(players_db):
+        entry = players_db[player_id]
+        player_name = str(entry.get("name", "")).strip()
+        if not player_name:
+            continue
+
+        aliases: list[str] = []
+        for alias in entry.get("aliases", []):
+            alias_str = str(alias).strip()
+            if alias_str and alias_str not in aliases:
+                aliases.append(alias_str)
+        if player_name not in aliases:
+            aliases.insert(0, player_name)
+
+        normalized_entry: dict[str, object] = {
+            "name": player_name,
+            "aliases": aliases,
+        }
+
+        player_index = entry.get("index")
+        if isinstance(player_index, int) and player_index > 0:
+            normalized_entry["index"] = player_index
+
+        raw_name = str(entry.get("raw_name", "")).strip()
+        if raw_name:
+            normalized_entry["raw_name"] = raw_name
+
+        last_seen = entry.get("last_seen")
+        if isinstance(last_seen, str) and last_seen.strip():
+            normalized_entry["last_seen"] = last_seen.strip()
+
+        normalized_players[player_id] = normalized_entry
+
+    payload = {
+        "source": SOURCE_NAME,
+        "updated_at": now_dt.isoformat(),
+        "count": len(normalized_players),
+        "players": normalized_players,
+    }
+
+    with open(temp_db_file, "w", encoding="utf-8") as db_handle:
+        json.dump(payload, db_handle, ensure_ascii=False, indent=2)
+        db_handle.write("\n")
+
+    os.replace(temp_db_file, PLAYERS_DB_FILE)
+
+
+def extract_player_id_name_pairs(lines: list[str]) -> list[Tuple[str, str]]:
+    pairs: list[Tuple[str, str]] = []
+    for line in lines:
+        for match in PLAYER_ID_PAIR_RE.finditer(line):
+            player_name = match.group("name").strip()
+            player_id = match.group("id").strip()
+            if not player_name or not player_id:
+                continue
+            pairs.append((player_id, player_name))
+    return pairs
+
+
+def get_next_player_index(players_db: dict[str, dict[str, object]]) -> int:
+    max_index = 0
+    for entry in players_db.values():
+        entry_index = entry.get("index")
+        if isinstance(entry_index, int) and entry_index > max_index:
+            max_index = entry_index
+    return max_index + 1
+
+
+def is_survivor_name(player_name: str) -> bool:
+    return "survivor" in player_name.casefold()
+
+
+def select_persisted_player_name(
+    observed_name: str,
+    player_index: int,
+    players_db: dict[str, dict[str, object]],
+) -> str:
+    if is_survivor_name(observed_name):
+        return f"Survivor{player_index}"
+
+    used_names = {
+        str(entry.get("name", "")).strip()
+        for entry in players_db.values()
+        if str(entry.get("name", "")).strip()
+    }
+
+    candidate = observed_name
+    if candidate in used_names:
+        candidate = f"{observed_name}{player_index}"
+
+    suffix = 2
+    while candidate in used_names:
+        candidate = f"{observed_name}{player_index}_{suffix}"
+        suffix += 1
+
+    return candidate
+
+
+def get_persisted_player_name(
+    players_db: dict[str, dict[str, object]],
+    player_id: str,
+    fallback_name: str,
+) -> str:
+    entry = players_db.get(player_id)
+    if not entry:
+        return fallback_name
+
+    resolved_name = str(entry.get("name", "")).strip()
+    if not resolved_name:
+        return fallback_name
+
+    return resolved_name
+
+
+def update_players_db(
+    players_db: dict[str, dict[str, object]],
+    pairs: list[Tuple[str, str]],
+    now_dt: datetime,
+) -> Tuple[int, int]:
+    if not pairs:
+        return 0, 0
+
+    latest_by_id: dict[str, str] = {}
+    for player_id, player_name in pairs:
+        latest_by_id[player_id] = player_name
+
+    new_ids = 0
+    alias_updates = 0
+    now_iso = now_dt.isoformat()
+
+    for player_id, player_name in latest_by_id.items():
+        existing = players_db.get(player_id)
+        if existing is None:
+            player_index = get_next_player_index(players_db)
+            persisted_name = select_persisted_player_name(player_name, player_index, players_db)
+            players_db[player_id] = {
+                "index": player_index,
+                "name": persisted_name,
+                "raw_name": player_name,
+                "aliases": [player_name],
+                "last_seen": now_iso,
+            }
+            new_ids += 1
+            continue
+
+        existing["last_seen"] = now_iso
+        existing["raw_name"] = player_name
+
+        current_name = str(existing.get("name", "")).strip()
+        aliases = [str(alias).strip() for alias in existing.get("aliases", []) if str(alias).strip()]
+        alias_added = False
+        if player_name not in aliases:
+            aliases.append(player_name)
+            alias_added = True
+        existing["aliases"] = aliases
+
+        if alias_added and player_name != current_name:
+            alias_updates += 1
+
+    return new_ids, alias_updates
+
+
+def sanitize_line_for_batch(
+    line: str,
+    players_db: dict[str, dict[str, object]],
+) -> Tuple[str, int]:
+    replacements = 0
+
+    def _replace(match: re.Match[str]) -> str:
+        nonlocal replacements
+        replacements += 1
+
+        original_name = match.group("name").strip()
+        player_id = match.group("id").strip()
+        prefix = (match.group("prefix") or "").rstrip()
+        tail = (match.group("tail") or "").strip()
+
+        persisted_name = get_persisted_player_name(players_db, player_id, original_name)
+        tail_block = f" ({tail})" if tail else ""
+
+        return f'Player "{persisted_name}"{prefix}{tail_block}'
+
+    sanitized = PLAYER_TOKEN_RE.sub(_replace, line)
+    return sanitized, replacements
+
+
+def sanitize_lines_for_batch(
+    lines: list[str],
+    players_db: dict[str, dict[str, object]],
+) -> Tuple[list[str], int]:
+    sanitized_lines = []
+    total_replacements = 0
+
+    for line in lines:
+        sanitized_line, replacements = sanitize_line_for_batch(line, players_db)
+        sanitized_lines.append(sanitized_line)
+        total_replacements += replacements
+
+    return sanitized_lines, total_replacements
 
 
 def send_to_webhook(lines: list[str], sleepy: bool) -> bool:
@@ -597,6 +916,7 @@ def monitor_logs() -> None:
     print("Sleepy trigger: enabled (SLEEPY=true after quiet hours, resets after first send)")
     print(f"State file: {STATE_FILE}")
     print(f"Batch dir: {BATCH_DIR}")
+    print(f"Players DB file: {PLAYERS_DB_FILE}")
     print(
         f"Webhook timeout: {WEBHOOK_TIMEOUT}s, "
         f"retries: {WEBHOOK_RETRIES}, "
@@ -611,6 +931,8 @@ def monitor_logs() -> None:
     print()
 
     last_file, last_position, trigger_state, sleepy_pending = load_state()
+    players_db = load_players_db()
+    print(f"[info] Players DB loaded: {len(players_db)} ids")
     startup_now = datetime.now()
     prune_expired_batch_lines(startup_now, reason="startup")
     was_in_quiet_hours = False
@@ -706,6 +1028,22 @@ def monitor_logs() -> None:
 
                 if new_position > last_position:
                     if new_lines:
+                        id_name_pairs = extract_player_id_name_pairs(new_lines)
+                        if id_name_pairs:
+                            new_ids, alias_updates = update_players_db(
+                                players_db, id_name_pairs, now_dt
+                            )
+                            if new_ids or alias_updates:
+                                try:
+                                    save_players_db(players_db, now_dt)
+                                    print(
+                                        "[info] Players DB updated: "
+                                        f"new_ids={new_ids}, alias_updates={alias_updates}, "
+                                        f"total_ids={len(players_db)}"
+                                    )
+                                except OSError as exc:
+                                    print(f"[warn] Failed to save players DB: {exc}")
+
                         deduped_raw_lines, duplicate_count = dedupe_lines_by_tail(new_lines)
                         if duplicate_count:
                             print(
@@ -722,13 +1060,23 @@ def monitor_logs() -> None:
                             )
 
                         if kept_lines:
-                            batch_file = append_lines_to_batch(kept_lines, now_dt)
+                            sanitized_lines, sanitized_tokens = sanitize_lines_for_batch(
+                                kept_lines, players_db
+                            )
+                            if sanitized_tokens:
+                                print(
+                                    "[info] Sanitized log lines for batch: "
+                                    f"player_tokens={sanitized_tokens} "
+                                    "(replaced names by DB and removed id)"
+                                )
+
+                            batch_file = append_lines_to_batch(sanitized_lines, now_dt)
                             print(
-                                f"[info] Appended {len(kept_lines)} lines to "
+                                f"[info] Appended {len(sanitized_lines)} lines to "
                                 f"{os.path.basename(batch_file)}"
                             )
 
-                            has_trigger_match = batch_has_send_include_match(kept_lines)
+                            has_trigger_match = batch_has_send_include_match(sanitized_lines)
                             previous_trigger = trigger_state
                             trigger_state = update_trigger_state(trigger_state, has_trigger_match)
                             if trigger_state != previous_trigger:
