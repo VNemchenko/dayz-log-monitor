@@ -458,7 +458,7 @@ def read_batch_lines(batch_file: str) -> list[str]:
     return lines
 
 
-def prune_expired_batch_lines(now_dt: datetime) -> None:
+def prune_expired_batch_lines(now_dt: datetime, reason: str) -> None:
     cutoff_ts = int(now_dt.timestamp()) - BATCH_ROTATE_SECONDS
     if cutoff_ts <= 0:
         return
@@ -498,7 +498,7 @@ def prune_expired_batch_lines(now_dt: datetime) -> None:
 
     if lines_pruned or files_removed:
         print(
-            "[info] Batch cleanup: "
+            f"[info] Batch cleanup ({reason}): "
             f"pruned {lines_pruned} old lines, "
             f"rewrote {files_rewritten} files, "
             f"removed {files_removed} files"
@@ -530,6 +530,16 @@ def update_trigger_state(trigger_state: int, batch_has_match: bool) -> int:
         return 1 if batch_has_match else TRIGGER_READY_TO_SEND
 
     return trigger_state
+
+
+def log_trigger_state(trigger_state: int, sleepy_pending: bool, in_quiet_hours: bool, reason: str) -> None:
+    print(
+        "[info] Trigger state: "
+        f"value={trigger_state}, "
+        f"SLEEPY={sleepy_pending}, "
+        f"quiet={in_quiet_hours}, "
+        f"reason={reason}"
+    )
 
 
 def flush_all_batches(send_reason: str, sleepy: bool) -> bool:
@@ -601,8 +611,16 @@ def monitor_logs() -> None:
     print()
 
     last_file, last_position, trigger_state, sleepy_pending = load_state()
+    startup_now = datetime.now()
+    prune_expired_batch_lines(startup_now, reason="startup")
     was_in_quiet_hours = False
     trigger_waiting_in_quiet_logged = False
+    log_trigger_state(
+        trigger_state,
+        sleepy_pending,
+        in_quiet_hours=is_in_quiet_hours(startup_now),
+        reason="startup",
+    )
 
     while True:
         now_dt = datetime.now()
@@ -620,6 +638,8 @@ def monitor_logs() -> None:
                     "[info] Include groups are disabled and batch files exist; "
                     "trigger set to 2."
                 )
+
+            log_trigger_state(trigger_state, sleepy_pending, in_quiet_hours, "loop")
 
             if in_quiet_hours:
                 if not was_in_quiet_hours:
@@ -662,7 +682,7 @@ def monitor_logs() -> None:
                 trigger_waiting_in_quiet_logged = False
 
             if trigger_state == 0 and not sleepy_pending:
-                prune_expired_batch_lines(now_dt)
+                prune_expired_batch_lines(now_dt, reason="loop")
 
             current_file = get_latest_log_file()
             if not current_file:
