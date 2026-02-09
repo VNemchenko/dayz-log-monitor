@@ -1,6 +1,7 @@
 ﻿FROM python:3.11-slim
 
 WORKDIR /app
+ENV TZ=Etc/UTC
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
@@ -8,7 +9,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY monitor.py ./
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends gosu \
+    && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gosu tzdata \
     && rm -rf /var/lib/apt/lists/* \
     && useradd --create-home --shell /usr/sbin/nologin appuser \
     && mkdir -p /state \
@@ -25,6 +26,10 @@ RUN set -eux; \
       'STATE_DIR="$(dirname "$STATE_FILE_PATH")"' \
       '' \
       'if [ "$(id -u)" -eq 0 ]; then' \
+      '  if [ -n "${TZ:-}" ] && [ -f "/usr/share/zoneinfo/${TZ}" ]; then' \
+      '    ln -snf "/usr/share/zoneinfo/${TZ}" /etc/localtime' \
+      '    echo "${TZ}" > /etc/timezone' \
+      '  fi' \
       '  mkdir -p "$STATE_DIR"' \
       '  if ! chown -R "${APP_USER}:${APP_GROUP}" "$STATE_DIR" /app 2>/dev/null; then' \
       '    echo "[warn] Failed to adjust ownership for $STATE_DIR; monitor may switch to fallback state file."' \

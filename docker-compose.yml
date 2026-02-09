@@ -5,6 +5,7 @@
     LOGS_DIR: /logs
     STATE_FILE: /state/position.txt
     BATCH_DIR: /state/batches
+    TZ: ${TZ:-Etc/UTC}
     WEBHOOK_TIMEOUT: ${WEBHOOK_TIMEOUT:-10}
     WEBHOOK_RETRIES: ${WEBHOOK_RETRIES:-3}
     WEBHOOK_RETRY_BACKOFF: ${WEBHOOK_RETRY_BACKOFF:-2}

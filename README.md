@@ -111,6 +111,7 @@ docker compose logs -f
 
 ### Shared (optional)
 
+- `TZ` - container timezone used for quiet hours and timestamps (example: `Europe/Moscow`)
 - `WEBHOOK_TIMEOUT` - HTTP timeout seconds (default `10`)
 - `WEBHOOK_RETRIES` - retries per webhook request (default `3`)
 - `WEBHOOK_RETRY_BACKOFF` - linear retry backoff base seconds (default `2`)
@@ -125,6 +126,7 @@ docker compose logs -f
 
 Sending resumes at the end hour exactly.
 The first successful webhook after the quiet window carries `SLEEPY=true`.
+Quiet-hours evaluation uses container local time configured by `TZ`.
 
 ## Operations
 
