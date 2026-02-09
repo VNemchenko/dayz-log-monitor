@@ -156,6 +156,7 @@ def parse_send_include_groups(value: str) -> list[list[str]]:
 
 
 CHECK_INTERVAL = read_int_env("CHECK_INTERVAL", 30, 1)
+ROTATE_MINUTES = read_int_env("ROTATE_MINUTES", 60, 1)
 WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
 WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
 WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
@@ -184,6 +185,7 @@ else:
     QUIET_HOURS_LABEL = "<disabled>"
 
 TRIGGER_READY_TO_SEND = 2
+BATCH_ROTATE_SECONDS = ROTATE_MINUTES * 60
 
 
 def mask_secret(secret: str) -> str:
@@ -386,19 +388,99 @@ def get_batch_file_for_append(now_dt: datetime) -> str:
 
 def append_lines_to_batch(lines: list[str], now_dt: datetime) -> str:
     batch_file = get_batch_file_for_append(now_dt)
+    line_ts = int(now_dt.timestamp())
 
     with open(batch_file, "a", encoding="utf-8") as batch_handle:
         for line in lines:
-            batch_handle.write(f"{line}\n")
+            batch_handle.write(f"{line_ts}\t{line}\n")
 
     return batch_file
 
 
-def read_batch_lines(batch_file: str) -> list[str]:
+def parse_batch_line(line: str) -> Tuple[Optional[int], str]:
+    if "\t" in line:
+        ts_raw, payload = line.split("\t", 1)
+        if ts_raw.isdigit():
+            return int(ts_raw), payload
+
+    return None, line
+
+
+def read_batch_entries(batch_file: str) -> list[Tuple[Optional[int], str]]:
     with open(batch_file, "r", encoding="utf-8", errors="ignore") as batch_handle:
-        lines = [line.rstrip("\n\r") for line in batch_handle if line.strip()]
+        entries = []
+
+        for raw_line in batch_handle:
+            line = raw_line.rstrip("\n\r")
+            if not line:
+                continue
+
+            ts, payload = parse_batch_line(line)
+            if not payload.strip():
+                continue
+            entries.append((ts, payload))
+
+    return entries
+
+
+def write_batch_entries(batch_file: str, entries: list[Tuple[int, str]]) -> None:
+    with open(batch_file, "w", encoding="utf-8") as batch_handle:
+        for ts, payload in entries:
+            batch_handle.write(f"{ts}\t{payload}\n")
+
+
+def read_batch_lines(batch_file: str) -> list[str]:
+    entries = read_batch_entries(batch_file)
+    lines = [payload for _, payload in entries]
 
     return lines
+
+
+def prune_expired_batch_lines(now_dt: datetime) -> None:
+    cutoff_ts = int(now_dt.timestamp()) - BATCH_ROTATE_SECONDS
+    if cutoff_ts <= 0:
+        return
+
+    files_removed = 0
+    files_rewritten = 0
+    lines_pruned = 0
+
+    for batch_file in list_batch_files():
+        entries = read_batch_entries(batch_file)
+        if not entries:
+            os.remove(batch_file)
+            files_removed += 1
+            continue
+
+        fallback_ts = int(os.path.getmtime(batch_file))
+        kept_entries: list[Tuple[int, str]] = []
+        pruned_from_file = 0
+
+        for ts, payload in entries:
+            entry_ts = fallback_ts if ts is None else ts
+            if entry_ts < cutoff_ts:
+                pruned_from_file += 1
+                continue
+            kept_entries.append((entry_ts, payload))
+
+        if pruned_from_file == 0:
+            continue
+
+        lines_pruned += pruned_from_file
+        if kept_entries:
+            write_batch_entries(batch_file, kept_entries)
+            files_rewritten += 1
+        else:
+            os.remove(batch_file)
+            files_removed += 1
+
+    if lines_pruned or files_removed:
+        print(
+            "[info] Batch cleanup: "
+            f"pruned {lines_pruned} old lines, "
+            f"rewrote {files_rewritten} files, "
+            f"removed {files_removed} files"
+        )
 
 
 def batch_has_send_include_match(lines: list[str]) -> bool:
@@ -474,6 +556,10 @@ def monitor_logs() -> None:
     print(f"Source name: {SOURCE_NAME}")
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     print(f"Check interval: {CHECK_INTERVAL}s")
+    print(
+        "Batch retention window: "
+        f"{ROTATE_MINUTES} minute(s) when trigger=0 and SLEEPY=false"
+    )
     print("Send mode: trigger-based (send when trigger reaches 2)")
     print(f"Quiet hours: {QUIET_HOURS_LABEL}")
     print("Sleepy trigger: enabled (SLEEPY=true after quiet hours, resets after first send)")
@@ -551,6 +637,9 @@ def monitor_logs() -> None:
                         print("[warn] Trigger remains armed due to delivery failure")
             else:
                 trigger_waiting_in_quiet_logged = False
+
+            if trigger_state == 0 and not sleepy_pending:
+                prune_expired_batch_lines(now_dt)
 
             current_file = get_latest_log_file()
             if not current_file:

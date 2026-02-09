@@ -11,7 +11,8 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 3. Empty lines are removed.
 4. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
 5. Kept lines are appended into a batch file in `BATCH_DIR`.
-6. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
+6. While `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
+7. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
    - Trigger starts at `0`.
    - If batch has include-group match:
      - `0 -> 1`
@@ -19,11 +20,11 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
    - If batch has no include-group match:
      - `0 -> 0`
      - `1 -> 2`
-7. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
-8. Trigger resets to `0` after successful send.
-9. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
-10. On entering quiet hours, internal `SLEEPY` is set to `true`.
-11. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
+8. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
+9. Trigger resets to `0` after successful send.
+10. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
+11. On entering quiet hours, internal `SLEEPY` is set to `true`.
+12. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
 
@@ -112,6 +113,7 @@ docker compose logs -f
 ### Shared (optional)
 
 - `TZ` - container timezone used for quiet hours and timestamps (example: `Europe/Moscow`)
+- `ROTATE_MINUTES` - retention window for unsent batch lines when `trigger=0` and `SLEEPY=false` (default `60`)
 - `WEBHOOK_TIMEOUT` - HTTP timeout seconds (default `10`)
 - `WEBHOOK_RETRIES` - retries per webhook request (default `3`)
 - `WEBHOOK_RETRY_BACKOFF` - linear retry backoff base seconds (default `2`)
