@@ -45,6 +45,11 @@ DEFAULT_EXCLUDE_SUBSTRINGS = [
     "Dug in",
     "Dug out",
     "choosing to respawn",
+    "Dismantled",
+    "teleported",
+    "folded",
+    "has raised",
+    
 ]
 
 
