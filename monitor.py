@@ -49,7 +49,7 @@ DEFAULT_EXCLUDE_SUBSTRINGS = [
     "teleported",
     "folded",
     "has raised",
-    
+    "Mounted",
 ]
 
 
