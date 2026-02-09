@@ -343,6 +343,28 @@ def filter_log_lines(lines: list[str]) -> Tuple[list[str], int]:
     return kept_lines, dropped_count
 
 
+def dedupe_lines_by_tail(lines: list[str]) -> Tuple[list[str], int]:
+    unique_lines = []
+    seen = set()
+    dropped_duplicates = 0
+
+    for line in lines:
+        if "|" in line:
+            _, tail = line.split("|", 1)
+            dedupe_key = tail.strip()
+        else:
+            dedupe_key = line
+
+        if dedupe_key in seen:
+            dropped_duplicates += 1
+            continue
+
+        seen.add(dedupe_key)
+        unique_lines.append(line)
+
+    return unique_lines, dropped_duplicates
+
+
 def list_batch_files() -> list[str]:
     pattern = os.path.join(BATCH_DIR, f"{SAFE_SOURCE_NAME}_*.log")
     return sorted(glob.glob(pattern))
@@ -571,6 +593,7 @@ def monitor_logs() -> None:
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
     print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
+    print("Deduplicate mode: enabled (unique by text after first '|')")
     if SEND_INCLUDE_GROUPS_ENABLED:
         print(f"Send include groups: {len(SEND_INCLUDE_GROUPS)}")
     else:
@@ -663,6 +686,14 @@ def monitor_logs() -> None:
 
                 if new_position > last_position:
                     if new_lines:
+                        deduped_raw_lines, duplicate_count = dedupe_lines_by_tail(new_lines)
+                        if duplicate_count:
+                            print(
+                                f"[info] Deduplicated {duplicate_count} raw lines "
+                                "by message tail (ignoring timestamp before '|')"
+                            )
+                        new_lines = deduped_raw_lines
+
                         kept_lines, dropped_count = filter_log_lines(new_lines)
                         if dropped_count:
                             print(

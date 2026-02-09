@@ -10,9 +10,12 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 2. It resumes reading from saved byte position (`STATE_FILE`) and keeps trigger state there.
 3. Empty lines are removed.
 4. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
-5. Kept lines are appended into a batch file in `BATCH_DIR`.
-6. While `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
-7. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
+5. Remaining lines are deduplicated by message tail:
+   - if line has `|`, only text after the first `|` is used as dedupe key
+   - if line has no `|`, full line is used
+6. Kept unique lines are appended into a batch file in `BATCH_DIR`.
+7. While `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
+8. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
    - Trigger starts at `0`.
    - If batch has include-group match:
      - `0 -> 1`
@@ -20,11 +23,11 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
    - If batch has no include-group match:
      - `0 -> 0`
      - `1 -> 2`
-8. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
-9. Trigger resets to `0` after successful send.
-10. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
-11. On entering quiet hours, internal `SLEEPY` is set to `true`.
-12. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
+9. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
+10. Trigger resets to `0` after successful send.
+11. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
+12. On entering quiet hours, internal `SLEEPY` is set to `true`.
+13. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
 
