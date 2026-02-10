@@ -52,6 +52,9 @@ DEFAULT_EXCLUDE_SUBSTRINGS = [
     "has raised",
     "Mounted",
 ]
+# Built-in excludes for RAW_WEBHOOK_URL stream before sending.
+# Keep empty by default; tune in code if needed.
+DEFAULT_RAW_EXCLUDE_SUBSTRINGS: list[str] = ["connect", ")):","killed by Player"]
 
 
 def read_int_env(name: str, default: int, min_value: int = 1) -> int:
@@ -81,6 +84,21 @@ def read_list_env(name: str) -> list[str]:
             values.append(cleaned)
 
     return values
+
+
+def build_unique_substrings(*token_groups: list[str]) -> list[str]:
+    merged_tokens = []
+    seen_tokens = set()
+
+    for token_group in token_groups:
+        for token in token_group:
+            token_cf = token.casefold()
+            if token_cf in seen_tokens:
+                continue
+            seen_tokens.add(token_cf)
+            merged_tokens.append(token)
+
+    return merged_tokens
 
 
 def resolve_writable_dir(path: str, fallback_path: str, label: str) -> str:
@@ -181,20 +199,19 @@ WEBHOOK_TIMEOUT = read_int_env("WEBHOOK_TIMEOUT", 10, 1)
 WEBHOOK_RETRIES = read_int_env("WEBHOOK_RETRIES", 3, 1)
 WEBHOOK_RETRY_BACKOFF = read_int_env("WEBHOOK_RETRY_BACKOFF", 2, 1)
 CUSTOM_EXCLUDE_SUBSTRINGS = read_list_env("FILTER_EXCLUDE_SUBSTRINGS")
+CUSTOM_RAW_EXCLUDE_SUBSTRINGS = read_list_env("RAW_FILTER_EXCLUDE_SUBSTRINGS")
 QUIET_HOURS_RANGE = parse_quiet_hours_range(QUIET_HOURS_RANGE_RAW)
 SEND_INCLUDE_GROUPS = parse_send_include_groups(SEND_INCLUDE_GROUPS_RAW)
 SEND_INCLUDE_GROUPS_ENABLED = bool(SEND_INCLUDE_GROUPS)
 
-EXCLUDE_SUBSTRINGS = []
-seen_tokens = set()
-for token in DEFAULT_EXCLUDE_SUBSTRINGS + CUSTOM_EXCLUDE_SUBSTRINGS:
-    token_cf = token.casefold()
-    if token_cf in seen_tokens:
-        continue
-    seen_tokens.add(token_cf)
-    EXCLUDE_SUBSTRINGS.append(token)
-
+EXCLUDE_SUBSTRINGS = build_unique_substrings(
+    DEFAULT_EXCLUDE_SUBSTRINGS, CUSTOM_EXCLUDE_SUBSTRINGS
+)
+RAW_EXCLUDE_SUBSTRINGS = build_unique_substrings(
+    DEFAULT_RAW_EXCLUDE_SUBSTRINGS, CUSTOM_RAW_EXCLUDE_SUBSTRINGS
+)
 EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in EXCLUDE_SUBSTRINGS]
+RAW_EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in RAW_EXCLUDE_SUBSTRINGS]
 SAFE_SOURCE_NAME = sanitize_source_name(SOURCE_NAME)
 STATE_FILE = resolve_state_file(RAW_STATE_FILE)
 BATCH_DIR = resolve_writable_dir(RAW_BATCH_DIR, FALLBACK_BATCH_DIR, "BATCH_DIR")
@@ -724,6 +741,23 @@ def filter_log_lines(lines: list[str]) -> Tuple[list[str], int]:
     return kept_lines, dropped_count
 
 
+def filter_raw_webhook_lines(lines: list[str]) -> Tuple[list[str], int]:
+    if not RAW_EXCLUDE_SUBSTRINGS_CASEFOLD:
+        return lines, 0
+
+    kept_lines = []
+    dropped_count = 0
+
+    for line in lines:
+        line_cf = line.casefold()
+        if any(token in line_cf for token in RAW_EXCLUDE_SUBSTRINGS_CASEFOLD):
+            dropped_count += 1
+            continue
+        kept_lines.append(line)
+
+    return kept_lines, dropped_count
+
+
 def dedupe_lines_by_tail(lines: list[str]) -> Tuple[list[str], int]:
     unique_lines = []
     seen = set()
@@ -1064,6 +1098,7 @@ def monitor_logs() -> None:
         f"retries: {WEBHOOK_RETRIES}, "
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
+    print(f"Raw filter excludes: {len(RAW_EXCLUDE_SUBSTRINGS)} substrings")
     print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
     print("Deduplicate mode: enabled (unique by text after first '|')")
     if SEND_INCLUDE_GROUPS_ENABLED:
@@ -1190,8 +1225,15 @@ def monitor_logs() -> None:
                             )
                         new_lines = compacted_lines
 
+                        raw_lines, raw_dropped_count = filter_raw_webhook_lines(new_lines)
+                        if raw_dropped_count:
+                            print(
+                                f"[info] Filtered out {raw_dropped_count} raw lines "
+                                "for RAW_WEBHOOK_URL by raw exclude substrings"
+                            )
+
                         # Raw pre-filter stream is delivered regardless of SLEEPY/quiet-hours state.
-                        raw_delivered = send_raw_lines_to_webhook(new_lines)
+                        raw_delivered = send_raw_lines_to_webhook(raw_lines)
                         if not raw_delivered:
                             print(
                                 "[warn] Raw pre-filter webhook delivery failed; "
