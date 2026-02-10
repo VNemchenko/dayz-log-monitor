@@ -536,7 +536,7 @@ def update_players_db(
         latest_by_id[player_id] = player_name
 
     new_ids = 0
-    alias_updates = 0
+    updated_ids = 0
     now_iso = now_dt.isoformat()
 
     for player_id, player_name in latest_by_id.items():
@@ -559,16 +559,21 @@ def update_players_db(
 
         current_name = str(existing.get("name", "")).strip()
         aliases = [str(alias).strip() for alias in existing.get("aliases", []) if str(alias).strip()]
-        alias_added = False
+        entry_updated = False
         if player_name not in aliases:
             aliases.append(player_name)
-            alias_added = True
+            entry_updated = True
         existing["aliases"] = aliases
 
-        if alias_added and player_name != current_name:
-            alias_updates += 1
+        # Existing ID must follow the latest observed name from logs.
+        if player_name != current_name:
+            existing["name"] = player_name
+            entry_updated = True
 
-    return new_ids, alias_updates
+        if entry_updated:
+            updated_ids += 1
+
+    return new_ids, updated_ids
 
 
 def sanitize_line_for_batch(
@@ -1001,9 +1006,12 @@ def batch_has_send_include_match(lines: list[str]) -> bool:
         # Include filter disabled: all lines are eligible for trigger matching.
         return True
 
-    for line in lines:
-        line_cf = line.casefold()
-        if any(all(term in line_cf for term in group) for group in SEND_INCLUDE_GROUPS):
+    # Match is evaluated against the whole current processed batch (CHECK_INTERVAL chunk),
+    # not per single line: terms in one group may be found in different lines.
+    batch_text = "\n".join(lines).casefold()
+
+    for group in SEND_INCLUDE_GROUPS:
+        if all(term in batch_text for term in group):
             return True
 
     return False
@@ -1243,15 +1251,15 @@ def monitor_logs() -> None:
 
                         id_name_pairs = extract_player_id_name_pairs(raw_lines_for_player_db)
                         if id_name_pairs:
-                            new_ids, alias_updates = update_players_db(
+                            new_ids, updated_ids = update_players_db(
                                 players_db, id_name_pairs, now_dt
                             )
-                            if new_ids or alias_updates:
+                            if new_ids or updated_ids:
                                 try:
                                     save_players_db(players_db, now_dt)
                                     print(
                                         "[info] Players DB updated: "
-                                        f"new_ids={new_ids}, alias_updates={alias_updates}, "
+                                        f"new_ids={new_ids}, updated_ids={updated_ids}, "
                                         f"total_ids={len(players_db)}"
                                     )
                                 except OSError as exc:

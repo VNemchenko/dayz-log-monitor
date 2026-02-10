@@ -62,6 +62,9 @@ Meaning:
 - `raid` and `base`, OR
 - `helicrash`
 
+Include matching is evaluated against the whole processed batch for the current poll cycle.
+So terms inside one `+` group may appear in different lines of that batch.
+
 If `SEND_INCLUDE_GROUPS_*` is empty, include filter is disabled and all processed logs are eligible for sending (still respecting quiet hours).
 
 ## Webhook Payload
