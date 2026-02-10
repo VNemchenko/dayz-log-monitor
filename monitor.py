@@ -55,7 +55,7 @@ DEFAULT_EXCLUDE_SUBSTRINGS = [
 # Despite legacy name, RAW_EXCLUDE here works as required include tokens
 # for RAW_WEBHOOK_URL stream: a line is sent only if it matches at least
 # one token from this list.
-DEFAULT_RAW_EXCLUDE_SUBSTRINGS: list[str] = ["connect", ")):", "killed by Player"]
+DEFAULT_RAW_EXCLUDE_SUBSTRINGS: list[str] = [")):", "killed by Player"]
 
 
 def read_int_env(name: str, default: int, min_value: int = 1) -> int:
