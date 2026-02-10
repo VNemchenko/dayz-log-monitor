@@ -22,6 +22,7 @@ print = print_with_timestamp
 
 LOGS_DIR = os.getenv("LOGS_DIR", "/logs")
 WEBHOOK_URL = os.getenv("WEBHOOK_URL", "").strip()
+RAW_WEBHOOK_URL = os.getenv("RAW_WEBHOOK_URL", "").strip()
 SOURCE_NAME = os.getenv("SOURCE_NAME", "dayz-server").strip() or "dayz-server"
 RAW_STATE_FILE = os.getenv("STATE_FILE", "/state/position.txt")
 RAW_BATCH_DIR = os.getenv("BATCH_DIR", "/state/batches")
@@ -588,6 +589,56 @@ def sanitize_lines_for_batch(
     return sanitized_lines, total_replacements
 
 
+def send_raw_lines_to_webhook(lines: list[str]) -> bool:
+    """Send raw lines (before filtering) to optional common webhook."""
+    if not lines:
+        return True
+
+    if not RAW_WEBHOOK_URL:
+        return True
+
+    payload = {
+        "timestamp": datetime.now().isoformat(),
+        "source": SOURCE_NAME,
+        "count": len(lines),
+        "logs": lines,
+    }
+
+    for attempt in range(1, WEBHOOK_RETRIES + 1):
+        try:
+            response = requests.post(
+                RAW_WEBHOOK_URL,
+                json=payload,
+                headers={"Content-Type": "application/json"},
+                timeout=WEBHOOK_TIMEOUT,
+            )
+
+            if 200 <= response.status_code < 300:
+                print(
+                    f"[ok] Delivered {len(lines)} raw pre-filter lines "
+                    f"(HTTP {response.status_code})"
+                )
+                return True
+
+            print(
+                f"[warn] Raw webhook returned HTTP {response.status_code} "
+                f"(attempt {attempt}/{WEBHOOK_RETRIES})"
+            )
+        except requests.RequestException as exc:
+            print(
+                f"[warn] Raw webhook request failed on attempt "
+                f"{attempt}/{WEBHOOK_RETRIES}: {exc}"
+            )
+
+        if attempt < WEBHOOK_RETRIES:
+            sleep_seconds = WEBHOOK_RETRY_BACKOFF * attempt
+            print(f"[info] Retrying raw webhook in {sleep_seconds}s")
+            time.sleep(sleep_seconds)
+
+    print(f"[error] Raw pre-filter delivery failed after {WEBHOOK_RETRIES} attempts")
+    return False
+
+
 def send_to_webhook(lines: list[str], sleepy: bool) -> bool:
     """Send lines to webhook and return delivery status."""
     if not lines:
@@ -911,6 +962,10 @@ def monitor_logs() -> None:
     print(f"Logs directory: {LOGS_DIR}")
     print(f"Source name: {SOURCE_NAME}")
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
+    if RAW_WEBHOOK_URL:
+        print(f"Raw webhook URL: {mask_secret(RAW_WEBHOOK_URL)}")
+    else:
+        print("Raw webhook URL: <disabled>")
     print(f"Check interval: {CHECK_INTERVAL}s")
     print(
         "Batch retention window: "
@@ -1033,6 +1088,13 @@ def monitor_logs() -> None:
 
                 if new_position > last_position:
                     if new_lines:
+                        raw_delivered = send_raw_lines_to_webhook(new_lines)
+                        if not raw_delivered:
+                            print(
+                                "[warn] Raw pre-filter webhook delivery failed; "
+                                "continuing normal pipeline."
+                            )
+
                         id_name_pairs = extract_player_id_name_pairs(new_lines)
                         if id_name_pairs:
                             new_ids, alias_updates = update_players_db(
@@ -1128,4 +1190,3 @@ if __name__ == "__main__":
         raise SystemExit(1)
 
     monitor_logs()
-

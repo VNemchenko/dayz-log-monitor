@@ -9,18 +9,19 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 1. Every `CHECK_INTERVAL` seconds, the monitor checks the newest `DayZServer_*.ADM` file.
 2. It resumes reading from saved byte position (`STATE_FILE`) and keeps trigger state there.
 3. Empty lines are removed.
-4. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
-5. Remaining lines are deduplicated by message tail:
+4. Before any filtering, new raw lines are sent to `RAW_WEBHOOK_URL` (if configured) with `source` and `logs`.
+5. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
+6. Remaining lines are deduplicated by message tail:
    - if line has `|`, only text after the first `|` is used as dedupe key
    - if line has no `|`, full line is used
-6. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
-7. Before appending to batch, each `Player "Name"(id=...)` token is normalized using the DB:
+7. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
+8. Before appending to batch, each `Player "Name"(id=...)` token is normalized using the DB:
    - name is replaced with persisted DB name
    - `id=...` is removed from the log line
-8. Kept unique lines are appended into a batch file in `BATCH_DIR`.
-9. On service startup, lines older than `ROTATE_MINUTES` are pruned from batch storage before any send attempt.
-10. During runtime, while `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
-11. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
+9. Kept unique lines are appended into a batch file in `BATCH_DIR`.
+10. On service startup, lines older than `ROTATE_MINUTES` are pruned from batch storage before any send attempt.
+11. During runtime, while `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
+12. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
    - Trigger starts at `0`.
    - If batch has include-group match:
      - `0 -> 1`
@@ -28,11 +29,11 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
    - If batch has no include-group match:
      - `0 -> 0`
      - `1 -> 2`
-12. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
-13. Trigger resets to `0` after successful send.
-14. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
-15. On entering quiet hours, internal `SLEEPY` is set to `true`.
-16. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
+13. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
+14. Trigger resets to `0` after successful send.
+15. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
+16. On entering quiet hours, internal `SLEEPY` is set to `true`.
+17. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
 
@@ -65,6 +66,22 @@ If `SEND_INCLUDE_GROUPS_*` is empty, include filter is disabled and all processe
   "logs": [
     "line 1",
     "line 2"
+  ]
+}
+```
+
+## Raw Pre-Filter Webhook Payload (optional)
+
+Used only when `RAW_WEBHOOK_URL` is set. This payload is sent every poll cycle with newly read non-empty lines, before exclude filtering and trigger logic.
+
+```json
+{
+  "timestamp": "2026-02-10T12:34:56.789012",
+  "source": "cherno",
+  "count": 42,
+  "logs": [
+    "raw line 1",
+    "raw line 2"
   ]
 }
 ```
@@ -155,6 +172,7 @@ docker compose logs -f
 ### Shared (optional)
 
 - `TZ` - container timezone used for quiet hours and timestamps (example: `Europe/Moscow`)
+- `RAW_WEBHOOK_URL` - optional common webhook for raw pre-filter lines from all servers
 - `ROTATE_MINUTES` - retention window for unsent batch lines when `trigger=0` and `SLEEPY=false` (default `60`)
 - `PLAYERS_DB_FILE` - path to JSON file with player ID/name mapping (default `/state/players.json`)
 - `WEBHOOK_TIMEOUT` - HTTP timeout seconds (default `10`)
