@@ -12,7 +12,10 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 4. Same-second HP burst lines are compacted when they differ only by `pos`/`HP`:
    - these lines become one line
    - `HP` is replaced by summed value
-5. Before raw webhook send, lines are filtered by `RAW_FILTER_EXCLUDE_SUBSTRINGS` + built-in raw exclude tokens.
+5. Before raw webhook send, lines are checked against required raw tokens:
+   - built-in tokens from `DEFAULT_RAW_EXCLUDE_SUBSTRINGS` (in code)
+   - extra tokens from `RAW_FILTER_EXCLUDE_SUBSTRINGS` (env)
+   A line is sent to raw webhook only if it contains at least one required token.
 6. New raw lines are sent to `RAW_WEBHOOK_URL` (if configured) with `source` and `logs`.
    This raw stream is not paused by quiet hours and does not depend on `SLEEPY`.
 7. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
@@ -179,7 +182,7 @@ docker compose logs -f
 ### Shared (optional)
 
 - `TZ` - container timezone used for quiet hours and timestamps (example: `Europe/Moscow`)
-- `RAW_FILTER_EXCLUDE_SUBSTRINGS` - extra exclude tokens for `RAW_WEBHOOK_URL` stream, comma/semicolon/newline separated
+- `RAW_FILTER_EXCLUDE_SUBSTRINGS` - extra required tokens for `RAW_WEBHOOK_URL` stream, comma/semicolon/newline separated (legacy variable name)
 - `ROTATE_MINUTES` - retention window for unsent batch lines when `trigger=0` and `SLEEPY=false` (default `60`)
 - `PLAYERS_DB_FILE` - path to JSON file with player ID/name mapping (default `/state/players.json`)
 - `WEBHOOK_TIMEOUT` - HTTP timeout seconds (default `10`)

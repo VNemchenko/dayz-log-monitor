@@ -52,9 +52,10 @@ DEFAULT_EXCLUDE_SUBSTRINGS = [
     "has raised",
     "Mounted",
 ]
-# Built-in excludes for RAW_WEBHOOK_URL stream before sending.
-# Keep empty by default; tune in code if needed.
-DEFAULT_RAW_EXCLUDE_SUBSTRINGS: list[str] = ["connect", ")):","killed by Player"]
+# Despite legacy name, RAW_EXCLUDE here works as required include tokens
+# for RAW_WEBHOOK_URL stream: a line is sent only if it matches at least
+# one token from this list.
+DEFAULT_RAW_EXCLUDE_SUBSTRINGS: list[str] = ["connect", ")):", "killed by Player"]
 
 
 def read_int_env(name: str, default: int, min_value: int = 1) -> int:
@@ -207,11 +208,11 @@ SEND_INCLUDE_GROUPS_ENABLED = bool(SEND_INCLUDE_GROUPS)
 EXCLUDE_SUBSTRINGS = build_unique_substrings(
     DEFAULT_EXCLUDE_SUBSTRINGS, CUSTOM_EXCLUDE_SUBSTRINGS
 )
-RAW_EXCLUDE_SUBSTRINGS = build_unique_substrings(
+RAW_REQUIRED_SUBSTRINGS = build_unique_substrings(
     DEFAULT_RAW_EXCLUDE_SUBSTRINGS, CUSTOM_RAW_EXCLUDE_SUBSTRINGS
 )
 EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in EXCLUDE_SUBSTRINGS]
-RAW_EXCLUDE_SUBSTRINGS_CASEFOLD = [token.casefold() for token in RAW_EXCLUDE_SUBSTRINGS]
+RAW_REQUIRED_SUBSTRINGS_CASEFOLD = [token.casefold() for token in RAW_REQUIRED_SUBSTRINGS]
 SAFE_SOURCE_NAME = sanitize_source_name(SOURCE_NAME)
 STATE_FILE = resolve_state_file(RAW_STATE_FILE)
 BATCH_DIR = resolve_writable_dir(RAW_BATCH_DIR, FALLBACK_BATCH_DIR, "BATCH_DIR")
@@ -742,7 +743,7 @@ def filter_log_lines(lines: list[str]) -> Tuple[list[str], int]:
 
 
 def filter_raw_webhook_lines(lines: list[str]) -> Tuple[list[str], int]:
-    if not RAW_EXCLUDE_SUBSTRINGS_CASEFOLD:
+    if not RAW_REQUIRED_SUBSTRINGS_CASEFOLD:
         return lines, 0
 
     kept_lines = []
@@ -750,10 +751,10 @@ def filter_raw_webhook_lines(lines: list[str]) -> Tuple[list[str], int]:
 
     for line in lines:
         line_cf = line.casefold()
-        if any(token in line_cf for token in RAW_EXCLUDE_SUBSTRINGS_CASEFOLD):
-            dropped_count += 1
+        if any(token in line_cf for token in RAW_REQUIRED_SUBSTRINGS_CASEFOLD):
+            kept_lines.append(line)
             continue
-        kept_lines.append(line)
+        dropped_count += 1
 
     return kept_lines, dropped_count
 
@@ -1098,7 +1099,7 @@ def monitor_logs() -> None:
         f"retries: {WEBHOOK_RETRIES}, "
         f"backoff: {WEBHOOK_RETRY_BACKOFF}s"
     )
-    print(f"Raw filter excludes: {len(RAW_EXCLUDE_SUBSTRINGS)} substrings")
+    print(f"Raw filter required tokens: {len(RAW_REQUIRED_SUBSTRINGS)} substrings")
     print(f"Filter excludes: {len(EXCLUDE_SUBSTRINGS)} substrings")
     print("Deduplicate mode: enabled (unique by text after first '|')")
     if SEND_INCLUDE_GROUPS_ENABLED:
@@ -1229,7 +1230,7 @@ def monitor_logs() -> None:
                         if raw_dropped_count:
                             print(
                                 f"[info] Filtered out {raw_dropped_count} raw lines "
-                                "for RAW_WEBHOOK_URL by raw exclude substrings"
+                                "for RAW_WEBHOOK_URL: no required raw token match"
                             )
 
                         # Raw pre-filter stream is delivered regardless of SLEEPY/quiet-hours state.
