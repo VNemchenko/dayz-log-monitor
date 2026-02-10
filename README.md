@@ -7,7 +7,7 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 ## Pipeline Overview
 
 1. Every `CHECK_INTERVAL` seconds, the monitor checks the newest `DayZServer_*.ADM` file.
-2. It resumes reading from saved byte position (`STATE_FILE`) and keeps trigger state there.
+2. It resumes reading from saved byte position (`STATE_FILE`), but resets trigger state to `0` on every startup.
 3. Empty lines are removed.
 4. Same-second HP burst lines are compacted when they differ only by `pos`/`HP`:
    - these lines become one line

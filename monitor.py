@@ -1117,6 +1117,10 @@ def monitor_logs() -> None:
     print()
 
     last_file, last_position, trigger_state, sleepy_pending = load_state()
+    if trigger_state != 0:
+        print(f"[info] Startup trigger reset: {trigger_state} -> 0")
+    trigger_state = 0
+    save_state(last_file, last_position, trigger_state, sleepy_pending)
     players_db = load_players_db()
     print(f"[info] Players DB loaded: {len(players_db)} ids")
     startup_now = datetime.now()
