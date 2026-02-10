@@ -8,7 +8,6 @@
     PLAYERS_DB_FILE: ${PLAYERS_DB_FILE:-/state/players.json}
     ROTATE_MINUTES: ${ROTATE_MINUTES:-60}
     TZ: ${TZ:-Etc/UTC}
-    RAW_WEBHOOK_URL: ${RAW_WEBHOOK_URL:-}
     WEBHOOK_TIMEOUT: ${WEBHOOK_TIMEOUT:-10}
     WEBHOOK_RETRIES: ${WEBHOOK_RETRIES:-3}
     WEBHOOK_RETRY_BACKOFF: ${WEBHOOK_RETRY_BACKOFF:-2}
@@ -30,6 +29,7 @@ services:
     environment:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_1}
+      RAW_WEBHOOK_URL: ${RAW_WEBHOOK_URL_1:-}
       SOURCE_NAME: ${SOURCE_NAME_1:-server1}
       CHECK_INTERVAL: ${CHECK_INTERVAL_1:-30}
       QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_1:-}
@@ -44,6 +44,7 @@ services:
     environment:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_2}
+      RAW_WEBHOOK_URL: ${RAW_WEBHOOK_URL_2:-}
       SOURCE_NAME: ${SOURCE_NAME_2:-server2}
       CHECK_INTERVAL: ${CHECK_INTERVAL_2:-30}
       QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_2:-}
@@ -58,6 +59,7 @@ services:
     environment:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_TEST}
+      RAW_WEBHOOK_URL: ${RAW_WEBHOOK_URL_TEST:-}
       SOURCE_NAME: ${SOURCE_NAME_TEST:-test}
       CHECK_INTERVAL: ${CHECK_INTERVAL_TEST:-30}
       QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_TEST:-}
@@ -72,6 +74,7 @@ services:
     environment:
       <<: *monitor-env
       WEBHOOK_URL: ${WEBHOOK_URL_TEST_2}
+      RAW_WEBHOOK_URL: ${RAW_WEBHOOK_URL_TEST_2:-}
       SOURCE_NAME: ${SOURCE_NAME_TEST_2:-test2}
       CHECK_INTERVAL: ${CHECK_INTERVAL_TEST_2:-30}
       QUIET_HOURS_RANGE: ${QUIET_HOURS_RANGE_TEST_2:-}

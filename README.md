@@ -78,7 +78,7 @@ If `SEND_INCLUDE_GROUPS_*` is empty, include filter is disabled and all processe
 
 ## Raw Pre-Filter Webhook Payload (optional)
 
-Used only when `RAW_WEBHOOK_URL` is set. This payload is sent every poll cycle with newly read non-empty lines, after raw webhook filtering but before main pipeline filtering and trigger logic.
+Used only when `RAW_WEBHOOK_URL_*` is set for a service. This payload is sent every poll cycle with newly read non-empty lines, after raw webhook filtering but before main pipeline filtering and trigger logic.
 
 ```json
 {
@@ -170,6 +170,7 @@ docker compose logs -f
 
 - `LOGS_HOST_PATH_*` - host path with DayZ ADM logs
 - `WEBHOOK_URL_*` - destination webhook
+- `RAW_WEBHOOK_URL_*` - optional raw pre-filter webhook for this service
 - `SOURCE_NAME_*` - `source` field in payload
 - `CHECK_INTERVAL_*` - poll interval in seconds
 - `QUIET_HOURS_RANGE_*` - quiet window in `HH-HH` format, empty to disable
@@ -178,7 +179,6 @@ docker compose logs -f
 ### Shared (optional)
 
 - `TZ` - container timezone used for quiet hours and timestamps (example: `Europe/Moscow`)
-- `RAW_WEBHOOK_URL` - optional common webhook for raw pre-filter lines from all servers
 - `RAW_FILTER_EXCLUDE_SUBSTRINGS` - extra exclude tokens for `RAW_WEBHOOK_URL` stream, comma/semicolon/newline separated
 - `ROTATE_MINUTES` - retention window for unsent batch lines when `trigger=0` and `SLEEPY=false` (default `60`)
 - `PLAYERS_DB_FILE` - path to JSON file with player ID/name mapping (default `/state/players.json`)
