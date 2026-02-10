@@ -590,7 +590,10 @@ def sanitize_lines_for_batch(
 
 
 def send_raw_lines_to_webhook(lines: list[str]) -> bool:
-    """Send raw lines (before filtering) to optional common webhook."""
+    """Send raw lines (before filtering) to optional common webhook.
+
+    This path is intentionally independent from quiet-hours/SLEEPY logic.
+    """
     if not lines:
         return True
 
@@ -964,6 +967,7 @@ def monitor_logs() -> None:
     print(f"Webhook URL: {mask_secret(WEBHOOK_URL)}")
     if RAW_WEBHOOK_URL:
         print(f"Raw webhook URL: {mask_secret(RAW_WEBHOOK_URL)}")
+        print("Raw webhook mode: always send on new lines (independent from SLEEPY/quiet hours)")
     else:
         print("Raw webhook URL: <disabled>")
     print(f"Check interval: {CHECK_INTERVAL}s")
@@ -1037,6 +1041,13 @@ def monitor_logs() -> None:
                     print(
                         "[info] Quiet hours ended."
                     )
+                    if trigger_state == 0 and sleepy_pending:
+                        sleepy_pending = False
+                        print(
+                            "[info] SLEEPY reset to false after quiet hours ended "
+                            "(trigger=0)."
+                        )
+                        save_state(last_file, last_position, trigger_state, sleepy_pending)
 
             was_in_quiet_hours = in_quiet_hours
 
@@ -1088,6 +1099,7 @@ def monitor_logs() -> None:
 
                 if new_position > last_position:
                     if new_lines:
+                        # Raw pre-filter stream is delivered regardless of SLEEPY/quiet-hours state.
                         raw_delivered = send_raw_lines_to_webhook(new_lines)
                         if not raw_delivered:
                             print(

@@ -10,6 +10,7 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 2. It resumes reading from saved byte position (`STATE_FILE`) and keeps trigger state there.
 3. Empty lines are removed.
 4. Before any filtering, new raw lines are sent to `RAW_WEBHOOK_URL` (if configured) with `source` and `logs`.
+   This raw stream is not paused by quiet hours and does not depend on `SLEEPY`.
 5. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
 6. Remaining lines are deduplicated by message tail:
    - if line has `|`, only text after the first `|` is used as dedupe key
@@ -33,7 +34,8 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 14. Trigger resets to `0` after successful send.
 15. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
 16. On entering quiet hours, internal `SLEEPY` is set to `true`.
-17. First successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
+17. If quiet hours end while trigger is still `0`, `SLEEPY` is reset to `false` immediately.
+18. Otherwise, first successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
 
@@ -189,6 +191,7 @@ docker compose logs -f
 
 Sending resumes at the end hour exactly.
 The first successful webhook after the quiet window carries `SLEEPY=true`.
+If the quiet window ends while trigger is `0`, `SLEEPY` is reset immediately.
 Quiet-hours evaluation uses container local time configured by `TZ`.
 
 ## Operations
