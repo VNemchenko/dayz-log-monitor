@@ -1280,6 +1280,7 @@ def monitor_logs() -> None:
                                 f"by exclude substrings"
                             )
 
+                        sanitized_lines: list[str] = []
                         if kept_lines:
                             sanitized_lines, sanitized_tokens = sanitize_lines_for_batch(
                                 kept_lines, players_db
@@ -1297,7 +1298,18 @@ def monitor_logs() -> None:
                                 f"{os.path.basename(batch_file)}"
                             )
 
-                            has_trigger_match = batch_has_send_include_match(sanitized_lines)
+                        # Trigger is evaluated once per processed CHECK_INTERVAL chunk.
+                        # For include-enabled mode this includes empty post-filter chunks,
+                        # so state 1 can move to 2 when "interesting" logs stop arriving.
+                        has_trigger_match = (
+                            batch_has_send_include_match(sanitized_lines)
+                            if sanitized_lines
+                            else False
+                        )
+                        should_update_trigger = (
+                            SEND_INCLUDE_GROUPS_ENABLED or bool(sanitized_lines)
+                        )
+                        if should_update_trigger:
                             previous_trigger = trigger_state
                             trigger_state = update_trigger_state(trigger_state, has_trigger_match)
                             if trigger_state != previous_trigger:
@@ -1306,28 +1318,28 @@ def monitor_logs() -> None:
                                     f"(matched={has_trigger_match})"
                                 )
 
-                            if trigger_state >= TRIGGER_READY_TO_SEND:
-                                if in_quiet_hours:
-                                    print(
-                                        "[info] Trigger reached 2 during quiet hours; "
-                                        "sending will start after quiet window."
-                                    )
-                                else:
-                                    delivered = flush_all_batches(
-                                        "trigger_reached", sleepy=sleepy_pending
-                                    )
-                                    if delivered:
-                                        if sleepy_pending:
-                                            print(
-                                                "[info] SLEEPY reset to false after successful send."
-                                            )
-                                            sleepy_pending = False
-                                        trigger_state = 0
-                                        print("[info] Trigger reset: 2 -> 0")
-                                    else:
+                        if trigger_state >= TRIGGER_READY_TO_SEND:
+                            if in_quiet_hours:
+                                print(
+                                    "[info] Trigger reached 2 during quiet hours; "
+                                    "sending will start after quiet window."
+                                )
+                            else:
+                                delivered = flush_all_batches(
+                                    "trigger_reached", sleepy=sleepy_pending
+                                )
+                                if delivered:
+                                    if sleepy_pending:
                                         print(
-                                            "[warn] Trigger remains armed due to delivery failure"
+                                            "[info] SLEEPY reset to false after successful send."
                                         )
+                                        sleepy_pending = False
+                                    trigger_state = 0
+                                    print("[info] Trigger reset: 2 -> 0")
+                                else:
+                                    print(
+                                        "[warn] Trigger remains armed due to delivery failure"
+                                    )
 
                     last_position = new_position
                     save_state(last_file, last_position, trigger_state, sleepy_pending)
