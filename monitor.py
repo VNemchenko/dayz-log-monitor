@@ -207,6 +207,9 @@ else:
 
 TRIGGER_READY_TO_SEND = 2
 BATCH_ROTATE_SECONDS = ROTATE_MINUTES * 60
+LOG_LINE_TS_RE = re.compile(r"^(?P<ts>\d{2}:\d{2}:\d{2})\s*\|\s*(?P<body>.*)$")
+HP_VALUE_RE = re.compile(r"\[HP:\s*(-?\d+(?:\.\d+)?)\]")
+POS_TOKEN_RE = re.compile(r"pos=<[^>]+>")
 PLAYER_ID_PAIR_RE = re.compile(
     r'Player\s+"(?P<name>[^"]+)"\s*(?:\([^)]*\)\s*)*\(id=(?P<id>[^)\s]+)'
 )
@@ -743,6 +746,81 @@ def dedupe_lines_by_tail(lines: list[str]) -> Tuple[list[str], int]:
     return unique_lines, dropped_duplicates
 
 
+def format_hp_sum(value: float) -> str:
+    text = f"{value:.4f}".rstrip("0").rstrip(".")
+    return text or "0"
+
+
+def compact_hp_burst_lines(lines: list[str]) -> Tuple[list[str], int, int]:
+    """Collapse same-second HP burst lines that only differ by pos/HP."""
+    groups: dict[tuple[str, str], dict[str, object]] = {}
+    ordered_items: list[Tuple[str, object]] = []
+
+    for line in lines:
+        ts_match = LOG_LINE_TS_RE.match(line)
+        if not ts_match:
+            ordered_items.append(("plain", line))
+            continue
+
+        body = ts_match.group("body")
+        hp_match = HP_VALUE_RE.search(body)
+        if not hp_match:
+            ordered_items.append(("plain", line))
+            continue
+
+        try:
+            hp_value = float(hp_match.group(1))
+        except ValueError:
+            ordered_items.append(("plain", line))
+            continue
+
+        normalized_body = POS_TOKEN_RE.sub("pos=<POS>", body)
+        normalized_body = HP_VALUE_RE.sub("[HP:<SUM>]", normalized_body, count=1)
+        key = (ts_match.group("ts"), normalized_body)
+
+        group = groups.get(key)
+        if group is None:
+            groups[key] = {
+                "first_line": line,
+                "hp_sum": hp_value,
+                "count": 1,
+            }
+            ordered_items.append(("group", key))
+            continue
+
+        group["hp_sum"] = float(group["hp_sum"]) + hp_value
+        group["count"] = int(group["count"]) + 1
+
+    compacted_lines: list[str] = []
+    collapsed_groups = 0
+    removed_lines = 0
+
+    for item_type, payload in ordered_items:
+        if item_type == "plain":
+            compacted_lines.append(str(payload))
+            continue
+
+        group = groups[payload]  # type: ignore[index]
+        count = int(group["count"])
+        first_line = str(group["first_line"])
+
+        if count <= 1:
+            compacted_lines.append(first_line)
+            continue
+
+        collapsed_groups += 1
+        removed_lines += count - 1
+        hp_sum_text = format_hp_sum(float(group["hp_sum"]))
+        collapsed_line = HP_VALUE_RE.sub(
+            f"[HP: {hp_sum_text}]",
+            first_line,
+            count=1,
+        )
+        compacted_lines.append(f"{collapsed_line} [collapsed x{count}]")
+
+    return compacted_lines, collapsed_groups, removed_lines
+
+
 def list_batch_files() -> list[str]:
     pattern = os.path.join(BATCH_DIR, f"{SAFE_SOURCE_NAME}_*.log")
     return sorted(glob.glob(pattern))
@@ -1100,6 +1178,18 @@ def monitor_logs() -> None:
 
                 if new_position > last_position:
                     if new_lines:
+                        raw_lines_for_player_db = new_lines
+
+                        compacted_lines, collapsed_groups, collapsed_lines = compact_hp_burst_lines(
+                            new_lines
+                        )
+                        if collapsed_groups:
+                            print(
+                                "[info] Collapsed HP burst lines: "
+                                f"groups={collapsed_groups}, removed={collapsed_lines}"
+                            )
+                        new_lines = compacted_lines
+
                         # Raw pre-filter stream is delivered regardless of SLEEPY/quiet-hours state.
                         raw_delivered = send_raw_lines_to_webhook(new_lines)
                         if not raw_delivered:
@@ -1108,7 +1198,7 @@ def monitor_logs() -> None:
                                 "continuing normal pipeline."
                             )
 
-                        id_name_pairs = extract_player_id_name_pairs(new_lines)
+                        id_name_pairs = extract_player_id_name_pairs(raw_lines_for_player_db)
                         if id_name_pairs:
                             new_ids, alias_updates = update_players_db(
                                 players_db, id_name_pairs, now_dt

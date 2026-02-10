@@ -9,20 +9,23 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 1. Every `CHECK_INTERVAL` seconds, the monitor checks the newest `DayZServer_*.ADM` file.
 2. It resumes reading from saved byte position (`STATE_FILE`) and keeps trigger state there.
 3. Empty lines are removed.
-4. Before any filtering, new raw lines are sent to `RAW_WEBHOOK_URL` (if configured) with `source` and `logs`.
+4. Same-second HP burst lines are compacted when they differ only by `pos`/`HP`:
+   - these lines become one line
+   - `HP` is replaced by summed value
+5. Before any filtering, new raw lines are sent to `RAW_WEBHOOK_URL` (if configured) with `source` and `logs`.
    This raw stream is not paused by quiet hours and does not depend on `SLEEPY`.
-5. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
-6. Remaining lines are deduplicated by message tail:
+6. Raw lines are scanned for player pairs like `Player "Name"(id=HASH)` and written into JSON player DB (`PLAYERS_DB_FILE`).
+7. Remaining lines are deduplicated by message tail:
    - if line has `|`, only text after the first `|` is used as dedupe key
    - if line has no `|`, full line is used
-7. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
-8. Before appending to batch, each `Player "Name"(id=...)` token is normalized using the DB:
+8. Lines are filtered by `FILTER_EXCLUDE_SUBSTRINGS` + built-in exclude tokens (case-insensitive substring match).
+9. Before appending to batch, each `Player "Name"(id=...)` token is normalized using the DB:
    - name is replaced with persisted DB name
    - `id=...` is removed from the log line
-9. Kept unique lines are appended into a batch file in `BATCH_DIR`.
-10. On service startup, lines older than `ROTATE_MINUTES` are pruned from batch storage before any send attempt.
-11. During runtime, while `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
-12. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
+10. Kept unique lines are appended into a batch file in `BATCH_DIR`.
+11. On service startup, lines older than `ROTATE_MINUTES` are pruned from batch storage before any send attempt.
+12. During runtime, while `trigger=0` and `SLEEPY=false`, lines older than `ROTATE_MINUTES` are pruned from batch storage.
+13. Trigger state is updated from the new batch using `SEND_INCLUDE_GROUPS`:
    - Trigger starts at `0`.
    - If batch has include-group match:
      - `0 -> 1`
@@ -30,12 +33,12 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
    - If batch has no include-group match:
      - `0 -> 0`
      - `1 -> 2`
-13. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
-14. Trigger resets to `0` after successful send.
-15. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
-16. On entering quiet hours, internal `SLEEPY` is set to `true`.
-17. Whenever `quiet=false` and trigger is `0`, `SLEEPY` is reset to `false` immediately.
-18. Otherwise, first successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
+14. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
+15. Trigger resets to `0` after successful send.
+16. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
+17. On entering quiet hours, internal `SLEEPY` is set to `true`.
+18. Whenever `quiet=false` and trigger is `0`, `SLEEPY` is reset to `false` immediately.
+19. Otherwise, first successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
 
