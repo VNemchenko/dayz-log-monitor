@@ -34,7 +34,7 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
 14. Trigger resets to `0` after successful send.
 15. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
 16. On entering quiet hours, internal `SLEEPY` is set to `true`.
-17. If quiet hours end while trigger is still `0`, `SLEEPY` is reset to `false` immediately.
+17. Whenever `quiet=false` and trigger is `0`, `SLEEPY` is reset to `false` immediately.
 18. Otherwise, first successful send after quiet hours includes `SLEEPY=true`; after that it is reset to `false`.
 
 ## Include Groups Syntax
@@ -191,7 +191,7 @@ docker compose logs -f
 
 Sending resumes at the end hour exactly.
 The first successful webhook after the quiet window carries `SLEEPY=true`.
-If the quiet window ends while trigger is `0`, `SLEEPY` is reset immediately.
+Whenever quiet mode is inactive (`quiet=false`) and trigger is `0`, `SLEEPY` is reset immediately.
 Quiet-hours evaluation uses container local time configured by `TZ`.
 
 ## Operations

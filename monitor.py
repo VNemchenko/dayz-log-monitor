@@ -1041,13 +1041,14 @@ def monitor_logs() -> None:
                     print(
                         "[info] Quiet hours ended."
                     )
-                    if trigger_state == 0 and sleepy_pending:
-                        sleepy_pending = False
-                        print(
-                            "[info] SLEEPY reset to false after quiet hours ended "
-                            "(trigger=0)."
-                        )
-                        save_state(last_file, last_position, trigger_state, sleepy_pending)
+
+            if not in_quiet_hours and trigger_state == 0 and sleepy_pending:
+                sleepy_pending = False
+                print(
+                    "[info] SLEEPY reset to false "
+                    "(quiet=false and trigger=0)."
+                )
+                save_state(last_file, last_position, trigger_state, sleepy_pending)
 
             was_in_quiet_hours = in_quiet_hours
 
