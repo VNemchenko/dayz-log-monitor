@@ -38,6 +38,7 @@ The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates cle
      - `0 -> 0`
      - `1 -> 2`
 15. When trigger reaches `2`, all accumulated batch files are sent in one webhook request and then deleted.
+    If the `1 -> 2` transition was caused by a non-matching chunk, that chunk is not included in this send and is appended after flush as the start of the next batch.
 16. Trigger resets to `0` after successful send.
 17. If current local server time is inside `QUIET_HOURS_RANGE`, sending is paused and batches keep accumulating.
 18. On entering quiet hours, internal `SLEEPY` is set to `true`.

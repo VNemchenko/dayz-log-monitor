@@ -1292,19 +1292,14 @@ def monitor_logs() -> None:
                             if sanitized_tokens:
                                 print(
                                     "[info] Sanitized log lines for batch: "
-                                    f"player_tokens={sanitized_tokens} "
-                                    "(replaced names by DB and removed id)"
-                                )
-
-                            batch_file = append_lines_to_batch(sanitized_lines, now_dt)
-                            print(
-                                f"[info] Appended {len(sanitized_lines)} lines to "
-                                f"{os.path.basename(batch_file)}"
+                                f"player_tokens={sanitized_tokens} "
+                                "(replaced names by DB and removed id)"
                             )
 
                         # Trigger is evaluated once per processed CHECK_INTERVAL chunk.
                         # For include-enabled mode this includes empty post-filter chunks,
                         # so state 1 can move to 2 when "interesting" logs stop arriving.
+                        previous_trigger = trigger_state
                         has_trigger_match = (
                             batch_has_send_include_match(sanitized_lines)
                             if sanitized_lines
@@ -1314,7 +1309,6 @@ def monitor_logs() -> None:
                             SEND_INCLUDE_GROUPS_ENABLED or bool(sanitized_lines)
                         )
                         if should_update_trigger:
-                            previous_trigger = trigger_state
                             trigger_state = update_trigger_state(trigger_state, has_trigger_match)
                             if trigger_state != previous_trigger:
                                 print(
@@ -1322,8 +1316,35 @@ def monitor_logs() -> None:
                                     f"(matched={has_trigger_match})"
                                 )
 
+                        defer_chunk_for_next_batch = (
+                            SEND_INCLUDE_GROUPS_ENABLED
+                            and previous_trigger == 1
+                            and not has_trigger_match
+                            and trigger_state >= TRIGGER_READY_TO_SEND
+                            and bool(sanitized_lines)
+                        )
+
+                        if sanitized_lines and not defer_chunk_for_next_batch:
+                            batch_file = append_lines_to_batch(sanitized_lines, now_dt)
+                            print(
+                                f"[info] Appended {len(sanitized_lines)} lines to "
+                                f"{os.path.basename(batch_file)}"
+                            )
+                        elif defer_chunk_for_next_batch:
+                            print(
+                                "[info] Non-matching chunk closed trigger sequence; "
+                                "it will be appended after flush as start of next batch."
+                            )
+
                         if trigger_state >= TRIGGER_READY_TO_SEND:
                             if in_quiet_hours:
+                                if defer_chunk_for_next_batch:
+                                    batch_file = append_lines_to_batch(sanitized_lines, now_dt)
+                                    print(
+                                        "[info] Quiet hours active; deferred chunk appended now "
+                                        f"to {os.path.basename(batch_file)}."
+                                    )
+                                    defer_chunk_for_next_batch = False
                                 print(
                                     "[info] Trigger reached 2 during quiet hours; "
                                     "sending will start after quiet window."
@@ -1340,7 +1361,21 @@ def monitor_logs() -> None:
                                         sleepy_pending = False
                                     trigger_state = 0
                                     print("[info] Trigger reset: 2 -> 0")
+                                    if defer_chunk_for_next_batch:
+                                        batch_file = append_lines_to_batch(sanitized_lines, now_dt)
+                                        print(
+                                            "[info] Deferred non-matching chunk appended after "
+                                            f"flush to {os.path.basename(batch_file)}"
+                                        )
+                                        defer_chunk_for_next_batch = False
                                 else:
+                                    if defer_chunk_for_next_batch:
+                                        batch_file = append_lines_to_batch(sanitized_lines, now_dt)
+                                        print(
+                                            "[warn] Flush failed; deferred chunk appended now "
+                                            f"to {os.path.basename(batch_file)} to avoid data loss."
+                                        )
+                                        defer_chunk_for_next_batch = False
                                     print(
                                         "[warn] Trigger remains armed due to delivery failure"
                                     )
