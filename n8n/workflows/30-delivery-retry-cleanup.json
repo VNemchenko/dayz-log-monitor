@@ -1,0 +1,4738 @@
+{
+  "name": "DayZ | 30 | Delivery Retry and Cleanup",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "b523055b-ac83-4302-897c-ceb6931c7f18",
+      "name": "Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1320,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "sending"
+            },
+            {
+              "keyName": "channel",
+              "condition": "eq",
+              "keyValue": "telegram"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "delivery_unknown",
+            "message": "",
+            "lease_token": "",
+            "last_error": "telegram_ambiguous_after_lease",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "881e9150-2280-4c27-8cbe-c08b10a62387",
+      "name": "Recover Stale Telegram Claims",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1080,
+        -300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "f2d1d9e6-71fc-431c-88b8-ebdc88b96219",
+      "name": "Collapse Recovered Telegram Claims",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "sending"
+            },
+            {
+              "keyName": "channel",
+              "condition": "eq",
+              "keyValue": "game"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "pending",
+            "lease_token": "",
+            "last_error": "signal_lease_reconcile",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "40c6998f-2a18-4936-88c2-471855c56d44",
+      "name": "Recover Stale Game Claims",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -840,
+        -300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "210d2e83-f6f0-4df1-adb6-87432031785c",
+      "name": "Collapse Recovered Game Claims",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "expired",
+            "message": "",
+            "lease_token": "",
+            "last_error": "delivery_expired_before_send",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "00841436-2d29-46a6-b9f2-79010a95d203",
+      "name": "Expire Pending Deliveries",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        -300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "6815adbf-2ca0-42ea-84a2-4d2ff2ec9dac",
+      "name": "Collapse Expired Deliveries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "gte",
+              "keyValue": 3
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "failed",
+            "message": "",
+            "lease_token": "",
+            "last_error": "delivery_attempts_exhausted",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "59ed7f5f-68b1-4ef3-81b8-8213de4557bc",
+      "name": "Fail Exhausted Deliveries",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        -300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "733a083e-fee9-437c-9bd8-32796be57ba2",
+      "name": "Collapse Exhausted Deliveries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "expires_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "message": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "1ab3bc81-8f1d-410d-af82-693a46d44645",
+      "name": "Purge Expired Delivery Messages",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -120,
+        -300
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "5506fb26-6b1b-42c6-9eb9-25d72ca7fc87",
+      "name": "Collapse Purged Delivery Messages",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "bdaf7eb9-a9d1-4e7d-bdc6-ad1f85cd5891",
+      "name": "Start Delivery Scan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "lt",
+              "keyValue": 3
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1,
+        "orderBy": true,
+        "orderByColumn": "next_attempt_at",
+        "orderByDirection": "ASC"
+      },
+      "id": "b800f2ca-68d4-454d-a58c-c55a4bfe540d",
+      "name": "Get Pending Deliveries",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        360,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst now = Date.now();\nconst executionId = (typeof $execution !== 'undefined' && $execution && $execution.id) ? String($execution.id) : String(now);\nreturn $input.all().filter((item) => {\n  const row = item.json;\n  const next = new Date(row.next_attempt_at).getTime();\n  const expires = new Date(row.expires_at).getTime();\n  return row.status === 'pending' && Number(row.attempt_count || 0) < 3 && Number.isFinite(next) && next <= now && Number.isFinite(expires) && expires > now;\n}).map((item) => ({ json: {\n  ...item.json,\n  claim_token: 'lease_' + executionId + '_' + item.json.delivery_id,\n  claim_until: new Date(now + POLICY.limits.delivery_lease_seconds * 1000).toISOString(),\n  claimed_at: new Date(now).toISOString(),\n} }));"
+      },
+      "id": "07664d2b-74e0-4dcc-97b2-88425481fbac",
+      "name": "Filter Due Deliveries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        120,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "delivery_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.delivery_id }}"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "pending"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "lt",
+              "keyValue": 3
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "sending",
+            "next_attempt_at": "={{ $json.claim_until }}",
+            "lease_token": "={{ $json.claim_token }}",
+            "claimed_at": "={{ $json.claimed_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "450afc21-e509-4d48-8814-7a5cf0b5c581",
+      "name": "Claim Due Delivery",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        360,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_routes",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "server_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.server_id }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "id": "e134edc3-6a3e-43eb-9936-9ad207ec2062",
+      "name": "Get Delivery Route",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        600,
+        -180
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst delivery = $('Claim Due Delivery').item.json;\nconst route = $json;\nlet deliverable = true;\nlet terminal_status = '';\nlet reason = '';\nconst routeFound = route && route.server_id === delivery.server_id && typeof route.mode === 'string' && typeof route.enabled === 'boolean';\nif (!routeFound) { deliverable = false; terminal_status = 'failed_configuration'; reason = 'route_not_found'; }\nelse if (route.mode === 'shadow') { deliverable = false; terminal_status = 'shadowed'; reason = 'route_shadow_mode'; }\nelse if (!route.enabled) { deliverable = false; terminal_status = 'suppressed_configuration'; reason = 'route_disabled'; }\nelse if (delivery.channel === 'telegram' && (!route.telegram_enabled || !route.telegram_chat_id || route.telegram_chat_id === 'REPLACE_ME')) { deliverable = false; terminal_status = 'suppressed_configuration'; reason = 'telegram_disabled'; }\nelse if (delivery.channel === 'game' && (!route.game_enabled || !/^https?:\\/\\//i.test(String(route.signal_base_url || '')) || /\\.invalid(?:\\/|$)/i.test(String(route.signal_base_url || '')))) { deliverable = false; terminal_status = 'suppressed_configuration'; reason = 'signal_disabled_or_invalid'; }\nelse if (!['telegram','game'].includes(delivery.channel)) { deliverable = false; terminal_status = 'failed_configuration'; reason = 'unknown_channel'; }\nconst routeCooldown = Math.max(POLICY.limits.auto_game_min_interval_seconds, Math.min(3600, Number(route && route.game_cooldown_seconds || POLICY.limits.game_global_cooldown_seconds)));\nconst cooldownSeconds = delivery.rate_scope_prefix ? routeCooldown : Number(delivery.cooldown_seconds || 0);\nconst telegramTextHtml = String(delivery.message || '')\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;')\n  .replace(/'/g, '&#39;');\nreturn { json: { ...delivery, cooldown_seconds: cooldownSeconds, route, deliverable, terminal_status, route_error: reason, telegram_text_html: telegramTextHtml } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "4b7b9ee6-d000-41b5-94b2-eb70d25fc39b",
+      "name": "Combine Delivery and Route",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        840,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "8b263533-e015-4f3b-a069-1550c3ef58f9",
+              "leftValue": "={{ $json.deliverable }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "8b8fa9da-d0d9-45be-b82e-e042453d80e4",
+      "name": "Route Is Deliverable",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1080,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString();\nreturn { json: {\n  ...$json,\n  status: $json.terminal_status || 'failed_configuration',\n  attempt_count: Number($json.attempt_count || 0),\n  next_attempt_at: now,\n  last_error: String($json.route_error || 'route_configuration_error').slice(0,500),\n  sent_at: null,\n  message: '',\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "8bbec310-9d16-49ff-89be-a4b424deda96",
+      "name": "Finalize Suppressed Delivery",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bb553f27-a561-415f-baf7-2bda993f74ff",
+              "leftValue": "={{ $json.channel === \"telegram\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "03b8d3e4-3281-4234-ba52-3e7dfa2f306f",
+      "name": "Telegram Channel",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1320,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.route.telegram_chat_id }}",
+        "text": "={{ $json.telegram_text_html }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "c5fae9b1-589b-4318-ac29-43c2fa416642",
+      "name": "Send Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1560,
+        -420
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "00000000-0000-4000-8000-000000000004",
+          "name": "REPLACE: DayZ Telegram Bot"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const delivery = $('Combine Delivery and Route').item.json;\nconst now = new Date().toISOString();\nreturn { json: { ...delivery, status: 'sent', attempt_count: Number(delivery.attempt_count || 0) + 1, next_attempt_at: now, last_error: '', sent_at: now, message: '' } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "349ff6f2-11cb-46e4-8c32-06af34bc865f",
+      "name": "Telegram Sent",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst delivery = $('Combine Delivery and Route').item.json;\nconst attempt = Number(delivery.attempt_count || 0) + 1;\nconst rawError = JSON.stringify($json && ($json.error || $json)).slice(0,8192);\nconst explicitRetryable = /429|too many|rate limit|5\\d\\d/i.test(rawError);\nconst ambiguous = /timeout|timed out|network|socket|econn/i.test(rawError);\nconst category = ambiguous ? 'ambiguous' : explicitRetryable ? 'retryable' : 'terminal';\nlet hash = 2166136261;\nfor (let index=0; index<rawError.length; index+=1) { hash ^= rawError.charCodeAt(index); hash = Math.imul(hash,16777619); }\nconst errorText = 'telegram_' + category + '_err_' + (hash>>>0).toString(16).padStart(8,'0');\nlet status = 'failed';\nlet next = new Date().toISOString();\nif (explicitRetryable && attempt < POLICY.limits.delivery_max_attempts) {\n  status = 'pending';\n  const delay = POLICY.limits.delivery_retry_seconds[Math.min(attempt - 1, POLICY.limits.delivery_retry_seconds.length - 1)];\n  next = new Date(Date.now() + delay * 1000).toISOString();\n} else if (ambiguous) status = 'delivery_unknown';\nreturn { json: { ...delivery, status, attempt_count: attempt, next_attempt_at: next, last_error: errorText, sent_at: null, message: status === 'pending' ? delivery.message : '' } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "b1f667c7-b0c0-4dde-9b79-19d29a5f8ea6",
+      "name": "Telegram Failed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "81dc6e2f-8d3c-4cd2-b9d6-42a46a6a827b",
+              "leftValue": "={{ Boolean($json.signal_status_url) || $json.last_error === \"signal_lease_reconcile\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "79879791-2a37-42a2-ae56-247087938bdf",
+      "name": "Signal Reconciliation Required",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1560,
+        -260
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.cooldown_scope }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "c3da65e9-17c5-4310-8d15-eb72f50e1adf",
+      "name": "Game Cooldown Is Free",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.cooldown_scope }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "92771c08-f2f9-4f0e-9b37-de887920c6a9",
+      "name": "Game Cooldown Is Active",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1560,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "bdf27d48-2ff3-49b2-b6d9-4bb12e70282e",
+              "leftValue": "={{ Boolean($json.secondary_cooldown_scope) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3a47c66f-98c2-46b1-a194-8392c3ab4998",
+      "name": "Interactive Game Delivery",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1800,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.secondary_cooldown_scope }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "947719a2-d770-4fbc-bd31-886eedf31c31",
+      "name": "Command Global Cooldown Is Free",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2040,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.secondary_cooldown_scope }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "c6e55493-e5d0-4a05-84d6-2a4ac0be03c0",
+      "name": "Command Global Cooldown Is Active",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2040,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.rate_scope_prefix + \"0\" }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "7bff9a2c-e7aa-43e6-ae45-45e3407c4613",
+      "name": "Auto Rate Slot 0 Is Free",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2040,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.rate_scope_prefix + \"0\" }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "26f18547-91f2-48d9-b05a-2c0855aae6ab",
+      "name": "Auto Rate Slot 0 Is Active",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2040,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { ...$json, rate_slot_scope: String($json.rate_scope_prefix || '') + '0' } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "50731ce0-757a-41df-8086-3aba94cabf1c",
+      "name": "Assign Auto Rate Slot 0",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2280,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.rate_scope_prefix + \"1\" }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "7c1dfea7-ae69-45eb-b6e5-1e3d3d06e8c0",
+      "name": "Auto Rate Slot 1 Is Free",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.rate_scope_prefix + \"1\" }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "b8aa8253-07a5-40c5-8258-d56db9318767",
+      "name": "Auto Rate Slot 1 Is Active",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2280,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { ...$json, rate_slot_scope: String($json.rate_scope_prefix || '') + '1' } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "50f73ac7-5671-46c6-a675-a326f5c17e83",
+      "name": "Assign Auto Rate Slot 1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2520,
+        -20
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowNotExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.rate_scope_prefix + \"2\" }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "f16a6663-e2e2-4b3e-94a7-bba614c48be5",
+      "name": "Auto Rate Slot 2 Is Free",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2520,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "rowExists",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.rate_scope_prefix + \"2\" }}"
+            },
+            {
+              "keyName": "until",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        }
+      },
+      "id": "5dfa164e-31a9-445a-9d1c-a8d419dbaa66",
+      "name": "Auto Rate Slot 2 Is Active",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2520,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return { json: { ...$json, rate_slot_scope: String($json.rate_scope_prefix || '') + '2' } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "91f9c914-d805-4642-9b6b-e4570f8bba48",
+      "name": "Assign Auto Rate Slot 2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2760,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const delivery = $json;\nconst seconds = Math.max(1, Math.min(3600, Number(delivery.cooldown_seconds || 120)));\nreturn { json: {\n  ...delivery,\n  status: 'pending',\n  next_attempt_at: new Date(Date.now() + seconds * 1000).toISOString(),\n  last_error: 'game_cooldown_active',\n  sent_at: null,\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "edffd17c-1edf-41ef-8889-dabe23b9fcc7",
+      "name": "Defer Game for Cooldown",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst delivery = $json;\nconst base = String(delivery.route.signal_base_url || '').replace(/\\/+$/, '');\nconst commandId = 'cmd_' + delivery.delivery_id;\nconst statusUrl = base + '/v1/broadcasts/' + encodeURIComponent(commandId);\nconst poll = Boolean(delivery.signal_status_url) || delivery.last_error === 'signal_lease_reconcile';\nconst now = (typeof __TEST_NOW__ !== 'undefined') ? new Date(__TEST_NOW__) : new Date();\nconst createdAt = new Date(delivery.created_at).getTime();\nconst expiresAt = new Date(delivery.expires_at).getTime();\nconst minimumSignalRemainingMs = (\n  POLICY.limits.delivery_lease_seconds\n  + POLICY.limits.delivery_scan_interval_seconds\n  + POLICY.limits.signal_reconcile_buffer_seconds\n) * 1000;\nconst remainingMs = expiresAt - now.getTime();\nconst wireTtlMs = expiresAt - createdAt;\nconst validWireTtl = Number.isFinite(createdAt) && Number.isFinite(expiresAt) && wireTtlMs >= 1000 && wireTtlMs <= POLICY.limits.signal_ttl_max_seconds * 1000;\nconst signalAttemptAllowed = validWireTtl && remainingMs > (poll ? 0 : minimumSignalRemainingMs);\nreturn { json: { ...delivery, signal_url: poll ? statusUrl : base + '/v1/broadcasts', signal_status_url: poll ? statusUrl : '', status_url: statusUrl, signal_method: poll ? 'GET' : 'POST', signal_attempt_allowed: signalAttemptAllowed, signal_remaining_seconds: Math.max(0, Math.floor(remainingMs / 1000)), signal_wire_ttl_seconds: Math.floor(wireTtlMs / 1000), command_id: commandId, command: {\n  schema: 'dayz.command.v1',\n  command_id: commandId,\n  server_id: delivery.server_id,\n  created_at: delivery.created_at,\n  expires_at: delivery.expires_at,\n  channel: 'global',\n  message: delivery.message,\n  metadata: { event_id: delivery.event_id, policy_version: delivery.policy_version },\n} } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "5b9dac53-6583-4009-86ac-365407437271",
+      "name": "Build Signal Command",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1800,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cf63c93c-23f1-4450-9d63-380a67d84e39",
+              "leftValue": "={{ $json.signal_attempt_allowed === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "aafd8e7a-84ca-4cf9-bc89-c87c1d46640f",
+      "name": "Signal Attempt Has Recovery Window",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2040,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = (typeof __TEST_NOW__ !== 'undefined') ? new Date(__TEST_NOW__) : new Date();\nreturn { json: {\n  ...$json,\n  status: 'expired',\n  attempt_count: Number($json.attempt_count || 0),\n  next_attempt_at: now.toISOString(),\n  last_error: $json.signal_method === 'GET' ? 'signal_reconcile_deadline_expired' : 'insufficient_signal_recovery_window',\n  sent_at: null,\n  message: '',\n  signal_status_url: '',\n  set_cooldown: false,\n} };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "346b70af-9f3a-42b9-a39f-db470d905f4b",
+      "name": "Expire Unsafe Signal Submission",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2280,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "9e988265-1ae2-4834-a6d4-900b47543a1e",
+              "leftValue": "={{ $json.signal_method === \"GET\" }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a870080a-6d77-498c-8f18-edcb4a664264",
+      "name": "Signal Status Poll",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2040,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.signal_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.command_id }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "json",
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.command) }}",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "3823585f-fff6-451a-9ce3-de6c1c4533e3",
+      "name": "Send Signal v1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2280,
+        -240
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "00000000-0000-4000-8000-000000000003",
+          "name": "REPLACE: DayZ Signal Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.signal_url }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "options": {
+          "timeout": 10000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "id": "ffe7d257-a8fb-453f-a9d3-1dcb74c66d1e",
+      "name": "Get Signal v1 Status",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2280,
+        -120
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "00000000-0000-4000-8000-000000000003",
+          "name": "REPLACE: DayZ Signal Header Auth"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst delivery = $('Build Signal Command').item.json;\nconst statusCode = Number($json && $json.statusCode || 0);\nconst body = $json && $json.body && typeof $json.body === 'object' ? $json.body : {};\nconst remoteStatus = String(body.status || '');\nconst remoteCommandId = String(body.command_id || '');\nconst remoteRequestId = String(body.request_id || '');\nconst matchingRequest = remoteCommandId === delivery.command_id && remoteRequestId === delivery.command_id;\nconst attempt = Number(delivery.attempt_count || 0) + 1;\nlet attemptCount = attempt;\nconst now = (typeof __TEST_NOW__ !== 'undefined') ? new Date(__TEST_NOW__) : new Date();\nlet status = 'failed';\nlet next = now.toISOString();\nlet lastError = '';\nlet sentAt = null;\nlet message = delivery.message;\nlet setCooldown = false;\nlet signalStatusUrl = String(delivery.signal_status_url || '');\nif (delivery.signal_method === 'GET' && statusCode === 404 && body.ok === false && body.error_code === 'not_found') {\n  status = 'pending';\n  attemptCount = Number(delivery.attempt_count || 0);\n  signalStatusUrl = '';\n  lastError = 'signal_not_found_retry_post';\n} else if ((statusCode === 200 || statusCode === 202) && body.ok === true && matchingRequest && remoteStatus === 'acknowledged') {\n  status = 'sent'; sentAt = now.toISOString(); message = ''; setCooldown = true;\n} else if ((statusCode === 200 || statusCode === 202) && body.ok === true && matchingRequest && ['queued','sending'].includes(remoteStatus) && attempt < POLICY.limits.delivery_max_attempts) {\n  status = 'pending';\n  signalStatusUrl = delivery.status_url;\n  const delay = POLICY.limits.delivery_retry_seconds[Math.min(attempt - 1, POLICY.limits.delivery_retry_seconds.length - 1)];\n  next = new Date(now.getTime() + delay * 1000).toISOString();\n  lastError = ('signal_' + remoteStatus).slice(0,500);\n} else if ((statusCode === 0 || statusCode === 429 || statusCode === 503 || statusCode >= 500 && ![502,504].includes(statusCode)) && attempt < POLICY.limits.delivery_max_attempts) {\n  status = 'pending';\n  const delay = POLICY.limits.delivery_retry_seconds[Math.min(attempt - 1, POLICY.limits.delivery_retry_seconds.length - 1)];\n  next = new Date(now.getTime() + delay * 1000).toISOString();\n  lastError = ('signal_http_' + (statusCode || 'network')).slice(0,500);\n} else {\n  if (statusCode === 410 || remoteStatus === 'expired') status = 'expired';\n  else if (statusCode === 504 || statusCode === 0 || remoteStatus === 'delivery_unknown' || ['queued','sending'].includes(remoteStatus)) status = 'delivery_unknown';\n  else status = 'failed';\n  lastError = ('signal_' + (remoteStatus || 'http_' + (statusCode || 'network'))).slice(0,500);\n  message = '';\n}\nreturn { json: { ...delivery, status, attempt_count: attemptCount, next_attempt_at: next, last_error: lastError, sent_at: sentAt, message, signal_status_url: signalStatusUrl, set_cooldown: setCooldown } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "7f178c45-0fe3-4242-b62b-a28440c49539",
+      "name": "Classify Signal Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2520,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "f93c3d1e-09df-4121-8694-9e2c6d50353c",
+              "leftValue": "={{ $json.set_cooldown }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "5f943da5-9e0a-402d-8ac7-b3eab226dbad",
+      "name": "Set Game Cooldown",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2520,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const delivery = $('Classify Signal Result').item.json;\nconst now = new Date();\nconst scopes = [\n  [delivery.cooldown_scope, Number(delivery.cooldown_seconds || 0)],\n  [delivery.secondary_cooldown_scope, Number(delivery.secondary_cooldown_seconds || 0)],\n  [delivery.rate_slot_scope, 600],\n];\nreturn scopes.filter(([scope,seconds]) => scope && seconds > 0).map(([scope,seconds]) => ({ json: {\n  scope_key: scope,\n  until: new Date(now.getTime() + Math.min(3600,seconds) * 1000).toISOString(),\n  last_delivery_id: delivery.delivery_id,\n  updated_at: now.toISOString(),\n} }));"
+      },
+      "id": "d2650afc-a80e-45f0-bfd5-ed3c68957f47",
+      "name": "Build Cooldown Rows",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2760,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "upsert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "scope_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.scope_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "scope_key": "={{ $json.scope_key }}",
+            "until": "={{ $json.until }}",
+            "last_delivery_id": "={{ $json.last_delivery_id }}",
+            "updated_at": "={{ $json.updated_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "scope_key",
+              "displayName": "scope_key",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "until",
+              "displayName": "until",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_delivery_id",
+              "displayName": "last_delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "updated_at",
+              "displayName": "updated_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "ecf94dc4-cc1f-44e4-9a16-7ce8671c3b6a",
+      "name": "Upsert Game Cooldown",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3000,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: $('Classify Signal Result').item.json }];"
+      },
+      "id": "8830fa0a-819b-446c-87ba-65dbf27ef18f",
+      "name": "Restore Signal Delivery Update",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3240,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "delivery_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.delivery_id }}"
+            },
+            {
+              "keyName": "lease_token",
+              "condition": "eq",
+              "keyValue": "={{ $json.lease_token }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "={{ $json.status }}",
+            "attempt_count": "={{ $json.attempt_count }}",
+            "next_attempt_at": "={{ $json.next_attempt_at }}",
+            "last_error": "={{ $json.last_error }}",
+            "sent_at": "={{ $json.sent_at }}",
+            "message": "={{ $json.message }}",
+            "signal_status_url": "={{ $json.signal_status_url || \"\" }}",
+            "lease_token": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "delivery_id",
+              "displayName": "delivery_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message",
+              "displayName": "message",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delete_after",
+              "displayName": "delete_after",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_hash",
+              "displayName": "payload_hash",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "policy_version",
+              "displayName": "policy_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "message_kind",
+              "displayName": "message_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_scope",
+              "displayName": "cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cooldown_seconds",
+              "displayName": "cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_scope",
+              "displayName": "secondary_cooldown_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "secondary_cooldown_seconds",
+              "displayName": "secondary_cooldown_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_scope_prefix",
+              "displayName": "rate_scope_prefix",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "rate_slot_scope",
+              "displayName": "rate_slot_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "claimed_at",
+              "displayName": "claimed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "source_event_ids_json",
+              "displayName": "source_event_ids_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "signal_status_url",
+              "displayName": "signal_status_url",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "332714a1-7cdf-4958-b523-682bf161411e",
+      "name": "Update Delivery State",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3480,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "hours",
+              "hoursInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "d0200ce9-bcfd-4e3b-bf6d-9ed5cbea99e1",
+      "name": "Hourly Cleanup",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1320,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "private_expires_at",
+              "condition": "lt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "payload_json": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "27ff625c-b5c0-475a-bfb6-636fd5bb75d6",
+      "name": "Clear Expired Batch Payloads",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -1080,
+        360
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "de19c699-53dc-46d4-a334-5fa3a43f7754",
+      "name": "Collapse Cleared Batch Payloads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -960,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "lt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "37490bd6-2e29-4b87-9e57-d2fe221e19af",
+      "name": "Delete Expired Batches",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -840,
+        360
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "4fc3c475-f6d6-48c4-a5b6-5ebc109e649d",
+      "name": "Collapse Deleted Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -720,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "event"
+            },
+            {
+              "keyName": "private_expires_at",
+              "condition": "lt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "admin_json": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "e6668388-1b52-4768-954f-6f90d9e62f68",
+      "name": "Clear Expired Private Payloads",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -600,
+        360
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "5f5bc611-38b7-4da1-b7b6-eac174bfd051",
+      "name": "Collapse Cleared Private Payloads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "event"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "lt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "5832c012-296f-4435-89b4-5b6c9dfaa6c7",
+      "name": "Delete Expired Events",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -360,
+        360
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "96e5339c-1f01-40a8-84b1-dd74d3c29ccc",
+      "name": "Collapse Deleted Events",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -240,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_deliveries",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "delete_after",
+              "condition": "lt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "3271bf83-446a-408c-9d93-4bad77802a64",
+      "name": "Delete Expired Deliveries",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -120,
+        360
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "1b998e10-0d42-4d7b-98d0-b1607b0eaa59",
+      "name": "Collapse Deleted Deliveries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        0,
+        440
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "deleteRows",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_cooldowns",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "until",
+              "condition": "lt",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4c89d61a-d5d9-4fd7-a8a9-44dcc47dc107",
+      "name": "Delete Expired Cooldowns",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        120,
+        360
+      ],
+      "alwaysOutputData": true
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Recover Stale Telegram Claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover Stale Telegram Claims": {
+      "main": [
+        [
+          {
+            "node": "Collapse Recovered Telegram Claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Recovered Telegram Claims": {
+      "main": [
+        [
+          {
+            "node": "Recover Stale Game Claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover Stale Game Claims": {
+      "main": [
+        [
+          {
+            "node": "Collapse Recovered Game Claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Recovered Game Claims": {
+      "main": [
+        [
+          {
+            "node": "Expire Pending Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expire Pending Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Collapse Expired Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Expired Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Fail Exhausted Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fail Exhausted Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Collapse Exhausted Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Exhausted Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Purge Expired Delivery Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Purge Expired Delivery Messages": {
+      "main": [
+        [
+          {
+            "node": "Collapse Purged Delivery Messages",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Purged Delivery Messages": {
+      "main": [
+        [
+          {
+            "node": "Start Delivery Scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Delivery Scan": {
+      "main": [
+        [
+          {
+            "node": "Get Pending Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Pending Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Filter Due Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Due Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Claim Due Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Due Delivery": {
+      "main": [
+        [
+          {
+            "node": "Get Delivery Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Delivery Route": {
+      "main": [
+        [
+          {
+            "node": "Combine Delivery and Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Delivery and Route": {
+      "main": [
+        [
+          {
+            "node": "Route Is Deliverable",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route Is Deliverable": {
+      "main": [
+        [
+          {
+            "node": "Telegram Channel",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Finalize Suppressed Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Finalize Suppressed Delivery": {
+      "main": [
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Channel": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Signal Reconciliation Required",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram": {
+      "main": [
+        [
+          {
+            "node": "Telegram Sent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Telegram Failed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Sent": {
+      "main": [
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Failed": {
+      "main": [
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signal Reconciliation Required": {
+      "main": [
+        [
+          {
+            "node": "Build Signal Command",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Game Cooldown Is Free",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Game Cooldown Is Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Game Cooldown Is Free": {
+      "main": [
+        [
+          {
+            "node": "Interactive Game Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Game Cooldown Is Active": {
+      "main": [
+        [
+          {
+            "node": "Defer Game for Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interactive Game Delivery": {
+      "main": [
+        [
+          {
+            "node": "Command Global Cooldown Is Free",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Command Global Cooldown Is Active",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Auto Rate Slot 0 Is Free",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Auto Rate Slot 0 Is Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Global Cooldown Is Free": {
+      "main": [
+        [
+          {
+            "node": "Build Signal Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Command Global Cooldown Is Active": {
+      "main": [
+        [
+          {
+            "node": "Defer Game for Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Rate Slot 0 Is Free": {
+      "main": [
+        [
+          {
+            "node": "Assign Auto Rate Slot 0",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Rate Slot 0 Is Active": {
+      "main": [
+        [
+          {
+            "node": "Auto Rate Slot 1 Is Free",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Auto Rate Slot 1 Is Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Auto Rate Slot 0": {
+      "main": [
+        [
+          {
+            "node": "Build Signal Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Rate Slot 1 Is Free": {
+      "main": [
+        [
+          {
+            "node": "Assign Auto Rate Slot 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Rate Slot 1 Is Active": {
+      "main": [
+        [
+          {
+            "node": "Auto Rate Slot 2 Is Free",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Auto Rate Slot 2 Is Active",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Auto Rate Slot 1": {
+      "main": [
+        [
+          {
+            "node": "Build Signal Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Rate Slot 2 Is Free": {
+      "main": [
+        [
+          {
+            "node": "Assign Auto Rate Slot 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Auto Rate Slot 2 Is Active": {
+      "main": [
+        [
+          {
+            "node": "Defer Game for Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assign Auto Rate Slot 2": {
+      "main": [
+        [
+          {
+            "node": "Build Signal Command",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Defer Game for Cooldown": {
+      "main": [
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Signal Command": {
+      "main": [
+        [
+          {
+            "node": "Signal Attempt Has Recovery Window",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signal Attempt Has Recovery Window": {
+      "main": [
+        [
+          {
+            "node": "Signal Status Poll",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Expire Unsafe Signal Submission",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expire Unsafe Signal Submission": {
+      "main": [
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Signal Status Poll": {
+      "main": [
+        [
+          {
+            "node": "Get Signal v1 Status",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send Signal v1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Signal v1": {
+      "main": [
+        [
+          {
+            "node": "Classify Signal Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Signal v1 Status": {
+      "main": [
+        [
+          {
+            "node": "Classify Signal Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Signal Result": {
+      "main": [
+        [
+          {
+            "node": "Set Game Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Set Game Cooldown": {
+      "main": [
+        [
+          {
+            "node": "Build Cooldown Rows",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Cooldown Rows": {
+      "main": [
+        [
+          {
+            "node": "Upsert Game Cooldown",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert Game Cooldown": {
+      "main": [
+        [
+          {
+            "node": "Restore Signal Delivery Update",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore Signal Delivery Update": {
+      "main": [
+        [
+          {
+            "node": "Update Delivery State",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Hourly Cleanup": {
+      "main": [
+        [
+          {
+            "node": "Clear Expired Batch Payloads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Expired Batch Payloads": {
+      "main": [
+        [
+          {
+            "node": "Collapse Cleared Batch Payloads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Cleared Batch Payloads": {
+      "main": [
+        [
+          {
+            "node": "Delete Expired Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Expired Batches": {
+      "main": [
+        [
+          {
+            "node": "Collapse Deleted Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Deleted Batches": {
+      "main": [
+        [
+          {
+            "node": "Clear Expired Private Payloads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Expired Private Payloads": {
+      "main": [
+        [
+          {
+            "node": "Collapse Cleared Private Payloads",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Cleared Private Payloads": {
+      "main": [
+        [
+          {
+            "node": "Delete Expired Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Expired Events": {
+      "main": [
+        [
+          {
+            "node": "Collapse Deleted Events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Deleted Events": {
+      "main": [
+        [
+          {
+            "node": "Delete Expired Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Delete Expired Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Collapse Deleted Deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Deleted Deliveries": {
+      "main": [
+        [
+          {
+            "node": "Delete Expired Cooldowns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "timezone": "Europe/Moscow",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "d2a4b764-b7f0-4702-b475-a96c156edc55",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

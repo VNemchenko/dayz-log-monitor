@@ -1,0 +1,16 @@
+.git
+.env
+.env.*
+!.env.example
+__pycache__
+*.py[cod]
+*.sqlite3*
+state
+logs_sample
+log_variants.json
+tests
+n8n
+servermod/*
+!servermod/config/
+servermod/config/*
+!servermod/config/livonia.world.generated.json

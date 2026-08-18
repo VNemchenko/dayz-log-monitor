@@ -1,0 +1,145 @@
+{
+  "name": "DayZ | 90 | Sanitized Error Alert",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "e192808f-a219-4527-a67d-1c1de7a8d66e",
+      "name": "Workflow Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [
+        -700,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const source = $json || {};\nconst workflow = source.workflow || {};\nconst execution = source.execution || {};\nconst error = execution.error || source.error || {};\nconst workflowNames = new Set([\n  'DayZ | 00 | Bootstrap Data Tables',\n  'DayZ | 10 | Event Gateway',\n  'DayZ | 15 | Durable Batch Processor',\n  'DayZ | 20 | Digest and LLM Publisher',\n  'DayZ | 30 | Delivery Retry and Cleanup',\n  'DayZ | 90 | Sanitized Error Alert',\n]);\nconst errorClasses = new Set(['Error','ApplicationError','ExecutionBaseError','NodeApiError','NodeOperationError','WorkflowOperationError']);\nconst workflowName = workflowNames.has(String(workflow.name || '')) ? String(workflow.name) : 'unknown_workflow';\nconst executionIdRaw = String(execution.id || '');\nconst executionId = /^[A-Za-z0-9_-]{1,80}$/.test(executionIdRaw) ? executionIdRaw : 'unknown';\nconst classRaw = String(error.name || 'Error');\nconst errorClass = errorClasses.has(classRaw) ? classRaw : 'Error';\nconst rawMessage = String(error.message || error.description || '').slice(0,8192);\nconst folded = rawMessage.toLowerCase();\nlet category = 'internal';\nif (/timeout|timed out/.test(folded)) category = 'timeout';\nelse if (/\\b429\\b|rate limit|too many requests/.test(folded)) category = 'rate_limited';\nelse if (/\\b401\\b|\\b403\\b|unauthori[sz]ed|forbidden|credential|authentication|bearer/.test(folded)) category = 'authentication';\nelse if (/econn|network|socket|dns|connection/.test(folded)) category = 'network';\nelse if (/schema|validation|invalid|malformed/.test(folded)) category = 'validation';\nelse if (/data table|database|sqlite|storage/.test(folded)) category = 'storage';\nconst fingerprintMaterial = [classRaw, rawMessage, String(error.code || ''), String(execution.lastNodeExecuted || '')].join('\\u001f');\nlet hash = 2166136261;\nfor (let index=0; index<fingerprintMaterial.length; index+=1) { hash ^= fingerprintMaterial.charCodeAt(index); hash = Math.imul(hash,16777619); }\nconst fingerprint = 'err_' + (hash>>>0).toString(16).padStart(8,'0');\nconst message = [\n  '[DayZ automation] Ошибка workflow.',\n  'Workflow: ' + workflowName,\n  'Execution: ' + executionId,\n  'Категория: ' + category,\n  'Класс: ' + errorClass,\n  'Fingerprint: ' + fingerprint,\n].join('\\n').slice(0,3500);\nconst messageHtml = message\n  .replace(/&/g, '&amp;')\n  .replace(/</g, '&lt;')\n  .replace(/>/g, '&gt;')\n  .replace(/\"/g, '&quot;')\n  .replace(/'/g, '&#39;');\nreturn [{ json: { message, message_html: messageHtml } }];"
+      },
+      "id": "4a94db0a-2da9-4a20-b74d-544c7c5098d4",
+      "name": "Build Sanitized Alert",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -460,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_routes",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "enabled",
+              "condition": "isTrue"
+            },
+            {
+              "keyName": "telegram_enabled",
+              "condition": "isTrue"
+            },
+            {
+              "keyName": "ops_alerts",
+              "condition": "isTrue"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "id": "bcd2d4c9-bdb8-41ec-96c2-50de60ed48ae",
+      "name": "Get Operations Alert Route",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.telegram_chat_id }}",
+        "text": "={{ $('Build Sanitized Alert').item.json.message_html }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "id": "bd6dc7ca-a315-427a-b73b-b90ad272aa7d",
+      "name": "Send Sanitized Error to Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        40,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "00000000-0000-4000-8000-000000000004",
+          "name": "REPLACE: DayZ Telegram Bot"
+        }
+      },
+      "onError": "continueRegularOutput"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Workflow Error Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Sanitized Alert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Sanitized Alert": {
+      "main": [
+        [
+          {
+            "node": "Get Operations Alert Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Operations Alert Route": {
+      "main": [
+        [
+          {
+            "node": "Send Sanitized Error to Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "timezone": "Europe/Moscow",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "ce998fa3-3463-40f1-a230-b94090771caf",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

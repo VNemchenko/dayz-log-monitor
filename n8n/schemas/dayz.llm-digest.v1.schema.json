@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/dayz.llm-digest.v1.schema.json",
+  "title": "DayZ LLM digest result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["message_ru", "safety_flags"],
+  "properties": {
+    "message_ru": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120,
+      "pattern": "^[^\\u0000-\\u001F\\u007F-\\u009F]+$"
+    },
+    "safety_flags": {
+      "type": "array",
+      "uniqueItems": true,
+      "maxItems": 5,
+      "items": {
+        "enum": ["contains_identity", "contains_exact_location", "contains_url", "contains_instruction", "unsupported_claim"]
+      }
+    }
+  }
+}

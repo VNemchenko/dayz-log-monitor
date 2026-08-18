@@ -11,6 +11,8 @@ from typing import Optional, Tuple
 
 import requests
 
+from dayz_events import EventPipeline, EventPipelineConfig
+
 
 def print_with_timestamp(*args, **kwargs) -> None:
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -1080,7 +1082,7 @@ def flush_all_batches(send_reason: str, sleepy: bool) -> bool:
     return True
 
 
-def monitor_logs() -> None:
+def monitor_logs(event_pipeline: Optional[EventPipeline] = None) -> None:
     """Main monitoring loop."""
     print("=== DayZ Log Monitor started ===")
     print(f"Logs directory: {LOGS_DIR}")
@@ -1102,6 +1104,14 @@ def monitor_logs() -> None:
     print(f"State file: {STATE_FILE}")
     print(f"Batch dir: {BATCH_DIR}")
     print(f"Players DB file: {PLAYERS_DB_FILE}")
+    if event_pipeline:
+        print("Typed event pipeline: enabled")
+        print(f"Event webhook URL: {mask_secret(event_pipeline.config.webhook_url)}")
+        print(f"Event state DB: {event_pipeline.config.state_db}")
+        print(f"Event server ID: {event_pipeline.config.server_id}")
+        print(f"Server timezone: {event_pipeline.config.server_timezone}")
+    else:
+        print("Typed event pipeline: disabled")
     print(
         f"Webhook timeout: {WEBHOOK_TIMEOUT}s, "
         f"retries: {WEBHOOK_RETRIES}, "
@@ -1138,6 +1148,26 @@ def monitor_logs() -> None:
         now_dt = datetime.now()
 
         try:
+            if event_pipeline:
+                try:
+                    event_metrics = event_pipeline.poll()
+                    if any(
+                        event_metrics[key]
+                        for key in ("lines", "events", "batches", "delivered", "retried")
+                    ):
+                        print(
+                            "[info] Typed events poll: "
+                            f"files={event_metrics['files']}, lines={event_metrics['lines']}, "
+                            f"events={event_metrics['events']}, batches={event_metrics['batches']}, "
+                            f"delivered={event_metrics['delivered']}, retried={event_metrics['retried']}"
+                        )
+                except Exception as exc:
+                    print(f"[error] Typed event pipeline failed: {exc}")
+
+            if not WEBHOOK_URL:
+                time.sleep(CHECK_INTERVAL)
+                continue
+
             in_quiet_hours = is_in_quiet_hours(now_dt)
 
             if (
@@ -1390,8 +1420,21 @@ def monitor_logs() -> None:
 
 
 if __name__ == "__main__":
-    if not WEBHOOK_URL:
-        print("[error] WEBHOOK_URL is required")
+    try:
+        event_config = EventPipelineConfig.from_env(logs_dir=LOGS_DIR, source_name=SOURCE_NAME)
+        typed_pipeline = EventPipeline(event_config, logger=print) if event_config.enabled else None
+    except (OSError, ValueError) as exc:
+        print(f"[error] Typed event pipeline configuration failed: {exc}")
+        raise SystemExit(1) from exc
+
+    if not WEBHOOK_URL and typed_pipeline is None:
+        print("[error] Either WEBHOOK_URL or EVENTS_ENABLED=true is required")
         raise SystemExit(1)
 
-    monitor_logs()
+    try:
+        monitor_logs(typed_pipeline)
+    except KeyboardInterrupt:
+        print("[info] Shutdown requested")
+    finally:
+        if typed_pipeline:
+            typed_pipeline.close()

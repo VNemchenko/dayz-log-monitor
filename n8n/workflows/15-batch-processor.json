@@ -1,0 +1,2347 @@
+{
+  "name": "DayZ | 15 | Durable Batch Processor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "ef570823-273f-4352-bdd9-25591528fe8d",
+      "name": "Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -1160,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "processing"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "queued",
+            "lease_token": "",
+            "last_error": "processor_lease_recovered",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "cf86dcc6-6a47-45cc-ab9c-03aa3598ebf0",
+      "name": "Recover Stale Batch Claims",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -920,
+        0
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "5325ac5e-cc8a-4c83-8c60-7988a232327f",
+      "name": "Collapse Recovered Batch Claims",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -800,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "queued"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "expired",
+            "payload_json": "",
+            "lease_token": "",
+            "last_error": "batch_expired_before_processing",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "5c9d173a-0f18-41ad-902c-21e9e51dd26d",
+      "name": "Expire Queued Batches",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -680,
+        -80
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "b9019769-8ede-4bd4-a8c2-72b1d6f61fff",
+      "name": "Collapse Expired Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -560,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "queued"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "gte",
+              "keyValue": 5
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "failed",
+            "lease_token": "",
+            "last_error": "batch_attempts_exhausted",
+            "next_attempt_at": "={{ $now.toISO() }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0c903926-74c2-4b59-8fe2-359c77354c01",
+      "name": "Fail Exhausted Batches",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -440,
+        -80
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "8a975dbe-385d-486a-b502-1fef12335943",
+      "name": "Collapse Exhausted Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { tick: true } }];"
+      },
+      "id": "9a2fe7ea-b5bb-40f2-9baa-5eef0075426b",
+      "name": "Start Batch Scan",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -200,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "queued"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "lt",
+              "keyValue": 5
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 10,
+        "orderBy": true,
+        "orderByColumn": "next_attempt_at",
+        "orderByDirection": "ASC"
+      },
+      "id": "38a447d7-bd8c-4fe3-9f3f-b9357316c73b",
+      "name": "Get Queued Batches",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst now = Date.now();\nconst executionId = (typeof $execution !== 'undefined' && $execution && $execution.id) ? String($execution.id) : String(now);\nreturn $input.all().filter((item) => {\n  const row = item.json;\n  const next = new Date(row.next_attempt_at).getTime();\n  const expires = new Date(row.expires_at).getTime();\n  return row.status === 'queued' && Number(row.attempt_count || 0) < POLICY.limits.batch_max_attempts && Number.isFinite(next) && next <= now && Number.isFinite(expires) && expires > now;\n}).map((item) => ({ json: {\n  ...item.json,\n  claim_token: 'batch_lease_' + executionId + '_' + item.json.batch_id,\n  claim_until: new Date(now + POLICY.limits.batch_lease_seconds * 1000).toISOString(),\n  claimed_at: new Date(now).toISOString(),\n} }));"
+      },
+      "id": "033e72c9-1680-4fbf-8bf1-70e03650d1e2",
+      "name": "Filter Due Batches",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.record_id }}"
+            },
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "status",
+              "condition": "eq",
+              "keyValue": "queued"
+            },
+            {
+              "keyName": "next_attempt_at",
+              "condition": "lte",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "expires_at",
+              "condition": "gt",
+              "keyValue": "={{ $now.toISO() }}"
+            },
+            {
+              "keyName": "attempt_count",
+              "condition": "lt",
+              "keyValue": 5
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "processing",
+            "attempt_count": "={{ Number($json.attempt_count || 0) + 1 }}",
+            "next_attempt_at": "={{ $json.claim_until }}",
+            "lease_token": "={{ $json.claim_token }}",
+            "last_error": ""
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "aec8e113-ecfd-457f-9e45-19b0f391c1f9",
+      "name": "Claim Queued Batch",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        520,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst output = [];\nfor (const [batchIndex, item] of $input.all().entries()) {\n  const batch = item.json;\n  let payload;\n  try { payload = JSON.parse(batch.payload_json || '{}'); } catch { throw new Error('invalid_normalized_batch_json'); }\n  if (!payload || payload.schema !== 'dayz.normalized-batch.v1' || payload.batch_id !== batch.batch_id || !Array.isArray(payload.events) || !payload.events.length) throw new Error('invalid_normalized_batch_contract');\n  for (const event of payload.events) {\n    const adminDocument = {\n    schema: 'dayz.admin-event.v1',\n    event_id: event.event_id,\n    server_id: event.server_id,\n    occurred_at: event.occurred_at,\n    processing_expires_at: event.processing_expires_at,\n    type: event.event_type,\n    severity: event.severity,\n    view: event.admin_view,\n    chronicle_private: event.chronicle_private,\n    routing: event.routing,\n    policy_version: POLICY.version,\n  };\n    const publicDocument = event.public_view === null ? null : {\n    schema: 'dayz.public-event.v1',\n    event_id: event.event_id,\n    server_id: event.server_id,\n    occurred_at: event.occurred_at,\n    type: event.event_type,\n    severity: event.severity,\n    view: event.public_view,\n  };\n    output.push({ json: {\n      record_id: 'event:' + event.event_id,\n      record_kind: 'event',\n      batch_id: batch.batch_id,\n      event_id: event.event_id,\n      server_id: event.server_id,\n      event_type: event.event_type,\n      occurred_at: event.occurred_at,\n      observed_at: event.observed_at,\n      processing_expires_at: event.processing_expires_at,\n      received_at: batch.received_at,\n      severity: event.severity,\n      audience_ceiling: event.audience_ceiling,\n      public_json: publicDocument ? JSON.stringify(publicDocument) : '',\n      admin_json: JSON.stringify(adminDocument),\n      digest_state: event.routing.digest_state,\n      chronicle_state: event.routing.chronicle_state || 'none',\n      safety_state: event.routing.safety_state || 'none',\n      announcement_state: event.routing.announcement_state || 'none',\n      immediate_state: event.event_type === 'player.command' ? 'command_pending' : (event.routing.immediate_channels.length ? 'pending' : 'none'),\n      private_expires_at: batch.private_expires_at,\n      expires_at: batch.expires_at,\n    }, pairedItem: { item: batchIndex } });\n  }\n}\nreturn output;"
+      },
+      "id": "04637bf9-30e0-4a71-9f81-a5e3358c5988",
+      "name": "Expand Normalized Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "batchSize": 1,
+        "options": {}
+      },
+      "id": "8609a1e0-4c39-4648-9603-3d2507f420d6",
+      "name": "Loop Event Candidates",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1000,
+        -80
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.record_id }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "id": "613e8232-6340-4375-aef5-1ef5b58ee936",
+      "name": "Get Existing Event Row",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1240,
+        -160
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const candidate = $(\"Loop Event Candidates\").item.json;\nconst existing = $json || {};\nconst alreadyExists = typeof existing.record_id === \"string\" && existing.record_id === candidate.record_id;\nreturn { json: { ...candidate, already_exists: alreadyExists } };"
+      },
+      "id": "2f20a2e9-900e-4cb6-b2f8-6d6a39a8a3b4",
+      "name": "Combine Event Candidate and Existing",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1480,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b831baf5-f42a-44dd-92c6-5a504b8aaf42",
+              "leftValue": "={{ $json.already_exists === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a80c77e0-5e0e-4a2b-9c0f-7e6855905810",
+      "name": "Event Already Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1720,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "record_id": "={{ $json.record_id }}",
+            "record_kind": "={{ $json.record_kind }}",
+            "batch_id": "={{ $json.batch_id }}",
+            "event_id": "={{ $json.event_id }}",
+            "server_id": "={{ $json.server_id }}",
+            "event_type": "={{ $json.event_type }}",
+            "occurred_at": "={{ $json.occurred_at }}",
+            "observed_at": "={{ $json.observed_at }}",
+            "processing_expires_at": "={{ $json.processing_expires_at }}",
+            "received_at": "={{ $json.received_at }}",
+            "severity": "={{ $json.severity }}",
+            "audience_ceiling": "={{ $json.audience_ceiling }}",
+            "public_json": "={{ $json.public_json }}",
+            "admin_json": "={{ $json.admin_json }}",
+            "digest_state": "={{ $json.digest_state }}",
+            "chronicle_state": "={{ $json.chronicle_state }}",
+            "safety_state": "={{ $json.safety_state }}",
+            "announcement_state": "={{ $json.announcement_state }}",
+            "immediate_state": "={{ $json.immediate_state }}",
+            "private_expires_at": "={{ $json.private_expires_at }}",
+            "expires_at": "={{ $json.expires_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "b9259249-9e25-4511-aee6-f00c76d548cc",
+      "name": "Insert New Event Row",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1960,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const now = new Date().toISOString();\nconst seen = new Set();\nconst output = [];\nfor (const item of $('Claim Queued Batch').all()) {\n  const claim = item.json;\n  if (!claim.batch_id || seen.has(claim.batch_id)) continue;\n  seen.add(claim.batch_id);\n  output.push({ json: {\n    record_id: claim.record_id,\n    batch_id: claim.batch_id,\n    lease_token: claim.lease_token,\n    status: 'processed',\n    payload_json: '',\n    next_attempt_at: now,\n    last_error: '',\n  } });\n}\nreturn output;"
+      },
+      "id": "abc5b0e3-7b6b-483e-a0a5-9adbb42f5500",
+      "name": "Build Batch Completion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.record_id }}"
+            },
+            {
+              "keyName": "record_kind",
+              "condition": "eq",
+              "keyValue": "batch"
+            },
+            {
+              "keyName": "lease_token",
+              "condition": "eq",
+              "keyValue": "={{ $json.lease_token }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "={{ $json.status }}",
+            "payload_json": "={{ $json.payload_json }}",
+            "next_attempt_at": "={{ $json.next_attempt_at }}",
+            "lease_token": "",
+            "last_error": "={{ $json.last_error }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "52257073-f385-4d7b-8dd4-c51427b1be6d",
+      "name": "Mark Batch Processed",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1000,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Recover Stale Batch Claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recover Stale Batch Claims": {
+      "main": [
+        [
+          {
+            "node": "Collapse Recovered Batch Claims",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Recovered Batch Claims": {
+      "main": [
+        [
+          {
+            "node": "Expire Queued Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expire Queued Batches": {
+      "main": [
+        [
+          {
+            "node": "Collapse Expired Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Expired Batches": {
+      "main": [
+        [
+          {
+            "node": "Fail Exhausted Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fail Exhausted Batches": {
+      "main": [
+        [
+          {
+            "node": "Collapse Exhausted Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collapse Exhausted Batches": {
+      "main": [
+        [
+          {
+            "node": "Start Batch Scan",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Start Batch Scan": {
+      "main": [
+        [
+          {
+            "node": "Get Queued Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Queued Batches": {
+      "main": [
+        [
+          {
+            "node": "Filter Due Batches",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter Due Batches": {
+      "main": [
+        [
+          {
+            "node": "Claim Queued Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Queued Batch": {
+      "main": [
+        [
+          {
+            "node": "Expand Normalized Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Expand Normalized Batch": {
+      "main": [
+        [
+          {
+            "node": "Loop Event Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Event Candidates": {
+      "main": [
+        [
+          {
+            "node": "Build Batch Completion",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Get Existing Event Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Event Row": {
+      "main": [
+        [
+          {
+            "node": "Combine Event Candidate and Existing",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Event Candidate and Existing": {
+      "main": [
+        [
+          {
+            "node": "Event Already Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Event Already Exists": {
+      "main": [
+        [
+          {
+            "node": "Loop Event Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert New Event Row",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert New Event Row": {
+      "main": [
+        [
+          {
+            "node": "Loop Event Candidates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Batch Completion": {
+      "main": [
+        [
+          {
+            "node": "Mark Batch Processed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "timezone": "Europe/Moscow",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "d6a51bbe-7b0f-4c0d-b814-122912f029a8",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

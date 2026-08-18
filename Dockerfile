@@ -7,6 +7,8 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY monitor.py ./
+COPY dayz_events ./dayz_events
+COPY servermod/config/livonia.world.generated.json /app/catalog/livonia.world.json
 
 RUN apt-get update \
     && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends gosu tzdata \

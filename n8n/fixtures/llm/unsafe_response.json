@@ -1,0 +1,4 @@
+{
+  "message_ru": "Игрок находится в точке x=4100 z=6800.",
+  "safety_flags": ["contains_exact_location", "contains_identity"]
+}

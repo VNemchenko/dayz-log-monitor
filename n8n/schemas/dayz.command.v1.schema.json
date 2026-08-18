@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/dayz.command.v1.schema.json",
+  "title": "dayz-signal broadcast command v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "command_id",
+    "server_id",
+    "created_at",
+    "expires_at",
+    "channel",
+    "message",
+    "metadata"
+  ],
+  "properties": {
+    "schema": {"const": "dayz.command.v1"},
+    "command_id": {"type": "string", "pattern": "^cmd_[A-Za-z0-9][A-Za-z0-9._:-]{3,123}$"},
+    "server_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{1,47}$"},
+    "created_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "channel": {"const": "global"},
+    "message": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 160,
+      "pattern": "^[^\\u0000-\\u001F\\u007F]+$",
+      "description": "Unicode is allowed. dayz-signal transliterates for RCon and rejects an empty or over-160-character transliterated result."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["event_id", "policy_version"],
+      "properties": {
+        "event_id": {"type": "string", "pattern": "^[A-Za-z0-9._:-]{1,128}$"},
+        "policy_version": {"const": "dayz-policy-v1"}
+      }
+    }
+  }
+}

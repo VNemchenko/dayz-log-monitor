@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/dayz.signal-response.v1.schema.json",
+  "title": "dayz-signal v1 broadcast response",
+  "type": "object",
+  "additionalProperties": true,
+  "required": ["ok", "service", "request_id", "command_id", "status", "created_at", "expires_at", "updated_at"],
+  "properties": {
+    "ok": {"type": "boolean"},
+    "service": {"type": "string"},
+    "command_id": {"type": "string", "pattern": "^cmd_[A-Za-z0-9][A-Za-z0-9._:-]{3,123}$"},
+    "request_id": {"type": "string", "pattern": "^cmd_[A-Za-z0-9][A-Za-z0-9._:-]{3,123}$"},
+    "status": {
+      "enum": ["queued", "sending", "acknowledged", "delivery_unknown", "expired", "failed"]
+    },
+    "sent_message": {"type": ["string", "null"]},
+    "created_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "updated_at": {"type": "string", "format": "date-time"},
+    "command": {"type": "string"},
+    "response": {"type": "string"},
+    "redacted": {"type": "boolean"},
+    "error_code": {"type": "string"},
+    "error": {"type": "string"}
+  }
+}

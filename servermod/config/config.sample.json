@@ -1,0 +1,25 @@
+{
+  "schema": 1,
+  "server_id": "replace-me",
+  "catalog_revision": "sha256:replace-with-generated-value",
+  "snapshot_interval_ms": 60000,
+  "snapshot_start_delay_ms": 10000,
+  "scanner_start_delay_ms": 60000,
+  "scan_tick_ms": 1000,
+  "scan_batch_size": 4,
+  "missing_scans_to_end": 2,
+  "event_points": [
+    {
+      "id": "heli_crash:000",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 1000.0,
+      "z": 1000.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    }
+  ]
+}

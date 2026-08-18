@@ -1,6 +1,110 @@
 # DayZ Log Monitor
 
-DayZ ADM log monitor for multiple servers with webhook delivery.
+DayZ log monitor for multiple servers with two parallel delivery contracts:
+
+- the existing filtered/raw webhook pipeline, kept unchanged for migration;
+- an opt-in typed `dayz.event-batch.v1` pipeline for n8n, Telegram and game-chat automation.
+
+## Typed Event Pipeline (v1)
+
+When `EVENTS_ENABLED=true`, the monitor tails all matching ADM, RPT, script and
+error logs with independent SQLite cursors. Cursor advancement, parsed events and
+the durable webhook outbox are committed transactionally. Incomplete final lines
+remain buffered, old files are drained after rotation, and retrying a batch keeps
+the same `batch_id` and `Idempotency-Key`.
+
+The new path parses and derives:
+
+- sessions, deaths, unconscious/recovered state, allowlisted chat commands and SOS;
+- PvP, explosions and traps as immediate events;
+- infected, wildlife and vehicle hits as bounded incident aggregates;
+- placement, construction and dismantling;
+- restart countdowns, RPT/script error fingerprints and telemetry freshness;
+- `RB_EVT v1` world snapshots and observed CE-event lifecycle;
+- optional read-only `storage_1` health based on names, timestamps and backup age.
+
+Complete PlayerList frames reconcile the authoritative online roster and update
+last position, movement distance/speed and movement class; none of those rows is
+emitted as a standalone coordinate event. UID values are replaced with
+server-scoped HMAC references. Exact coordinates and names
+exist only in `admin_view`; `public_view` contains no raw log line and at most a
+2x2 km sector. Static CE territory points are always labelled as configured
+candidates, never as current activity.
+
+The generated Livonia reference catalog is baked into the image for server 1.
+It comes from `servermod/config/livonia.world.generated.json`; other maps must use
+their own catalog or leave `EVENT_CATALOG_FILE_*` empty.
+
+### Event webhook
+
+The monitor sends at most 100 events and 256 KiB per request:
+
+```json
+{
+  "schema": "dayz.event-batch.v1",
+  "batch_id": "batch_<stable-hash>",
+  "sent_at": "2026-08-17T12:00:00Z",
+  "producer": {"name": "dayz-log-monitor", "source": "livonia"},
+  "events": [{
+    "schema": "dayz.event.v1",
+    "event_id": "evt_<stable-hash>",
+    "server_id": "livonia-1",
+    "type": "player.sos",
+    "occurred_at": "2026-08-17T11:59:58Z",
+    "observed_at": "2026-08-17T12:00:00Z",
+    "expires_at": "2026-08-17T12:04:58Z",
+    "severity": "warning",
+    "audience_ceiling": "public",
+    "admin_view": {},
+    "public_view": {"acknowledgement": "sos_received"},
+    "facts": {},
+    "source": {"kind": "adm", "file": "DayZServer_....ADM", "offset_start": 1, "offset_end": 2}
+  }]
+}
+```
+
+Requests use `X-DayZ-Key` and `Idempotency-Key: <batch_id>`. Both
+`EVENT_WEBHOOK_KEY` and `PLAYER_HMAC_SECRET` must be independent, non-placeholder
+secrets of at least 32 characters. The n8n import bundle, policy and fixtures are
+documented in [`n8n/README.md`](n8n/README.md).
+
+### Player commands
+
+Only these commands are parsed; arbitrary chat is discarded by the event path:
+
+- `!status`, `!weather`, `!time`, `!rules` — public-safe global response request;
+- `!sos` — exact admin alert plus anonymous global acknowledgement;
+- two `EmoteSOS` actions within 30 seconds — the same SOS workflow;
+- `!admin <message>` — bounded admin-only text, never sent to the LLM.
+
+All game replies remain global because BattlEye uses `say -1`.
+
+### Enable safely
+
+Keep `EVENT_START_AT_END=true` for first production startup so historical logs are
+registered at EOF instead of replayed to n8n. Configure `EVENT_WEBHOOK_URL_*`,
+`SERVER_ID_*`, the two secrets, then enable only the intended service with
+`EVENTS_ENABLED_1=true` (or the corresponding `_2`/`_TEST` variable). The first
+empty poll does not consume this guard: a late-mounted log directory is still
+registered at EOF. After migration, the process may run typed-only with an empty
+legacy `WEBHOOK_URL_*`.
+
+To enable `storage_1` health, add a read-only mount in a local Compose override:
+
+```yaml
+services:
+  dayz-log-monitor-1:
+    volumes:
+      - /path/to/mission/storage_1:/storage:ro
+    environment:
+      STORAGE_DIR: /storage
+```
+
+Never mount the persistence directory writable.
+
+The server-only telemetry source and build preflight are documented in
+[`servermod/README.md`](servermod/README.md). It does not patch the mission and it
+does not interpret `events.bin`.
 
 The service tails `DayZServer_*.ADM` files, filters noisy lines, accumulates clean lines into batch files, and sends accumulated batches to webhook by a trigger workflow.
 
@@ -73,7 +177,7 @@ If `SEND_INCLUDE_GROUPS_*` is empty, include filter is disabled and all processe
 ```json
 {
   "timestamp": "2026-02-09T12:34:56.789012",
-  "source": "cherno",
+  "source": "livonia",
   "count": 42,
   "SLEEPY": false,
   "logs": [
@@ -90,7 +194,7 @@ Used only when `RAW_WEBHOOK_URL_*` is set for a service. This payload is sent ev
 ```json
 {
   "timestamp": "2026-02-10T12:34:56.789012",
-  "source": "cherno",
+  "source": "livonia",
   "count": 42,
   "logs": [
     "raw line 1",
@@ -113,7 +217,7 @@ Example:
 
 ```json
 {
-  "source": "cherno",
+  "source": "livonia",
   "updated_at": "2026-02-09T12:34:56.789012",
   "count": 2,
   "players": {
@@ -136,6 +240,10 @@ Example:
 ## Project Files
 
 - `monitor.py` - log read/filter/batch/trigger/send logic
+- `dayz_events/` - typed parsers, privacy projection, SQLite cursor/outbox and delivery
+- `n8n/` - importable n8n workflows, policies, schemas and offline fixtures
+- `servermod/` - `@RedBastionTelemetry` source and deterministic Livonia catalogs
+- `tests/` - unit tests plus optional read-only Livonia snapshot replay
 - `docker-compose.yml` - multi-server deployment
 - `Dockerfile` - container image
 - `docker-entrypoint.sh` - runtime startup user/permissions wrapper
@@ -178,6 +286,11 @@ docker compose logs -f
 - `LOGS_HOST_PATH_*` - host path with DayZ ADM logs
 - `WEBHOOK_URL_*` - destination webhook
 - `RAW_WEBHOOK_URL_*` - optional raw pre-filter webhook for this service
+- `EVENTS_ENABLED_*` - enable the typed path independently for this service
+- `EVENT_WEBHOOK_URL_*` - authenticated n8n event gateway
+- `SERVER_ID_*` - stable lowercase server identifier
+- `EVENT_CATALOG_FILE_*` - per-server generated static world reference
+- `STORAGE_DIR_*` - optional read-only `storage_1` path inside the container
 - `SOURCE_NAME_*` - `source` field in payload
 - `CHECK_INTERVAL_*` - poll interval in seconds
 - `QUIET_HOURS_RANGE_*` - quiet window in `HH-HH` format, empty to disable
@@ -193,6 +306,68 @@ docker compose logs -f
 - `WEBHOOK_RETRIES` - retries per webhook request (default `3`)
 - `WEBHOOK_RETRY_BACKOFF` - linear retry backoff base seconds (default `2`)
 - `FILTER_EXCLUDE_SUBSTRINGS` - extra exclude tokens, comma/semicolon/newline separated
+- `EVENT_WEBHOOK_KEY` - inbound n8n shared secret, minimum 32 characters
+- `PLAYER_HMAC_SECRET` - independent HMAC secret for stable player references
+- `SERVER_TIMEZONE` - IANA timezone used to convert ADM timestamps to UTC
+- `EVENT_DB_FILE` - SQLite cursor/event/outbox state (default `/state/events.sqlite3`)
+- `EVENT_START_AT_END` - skip existing bytes on the first typed-pipeline startup
+- `EVENT_BATCH_MAX_EVENTS` / `EVENT_BATCH_MAX_BYTES` - hard payload limits
+- `TELEMETRY_STALE_SECONDS` - alert threshold without a `world.snapshot`
+
+## Verification
+
+Run offline tests without calling webhooks or a game server:
+
+```bash
+python -m unittest discover -s tests -v
+```
+
+The 283-file Livonia replay is intentionally excluded from normal unit-test
+discovery. Run it explicitly; it uses the real event pipeline, temporary SQLite
+state and an in-memory fake webhook, and never writes to the snapshot:
+
+```powershell
+python -m tests.replay_livonia --source F:\src\livonia --expected-files 283
+```
+
+The command verifies source SHA256 before/after, cursor EOF state, stable unique
+event IDs, no work on a second or reopened poll, and prints only aggregate
+counters (never event payloads, player names or UIDs). It uses a deterministic
+pre-snapshot clock so historic events exercise the fake outbox instead of being
+discarded by runtime TTLs. The older ADM-only parser fixture is also opt-in with
+`RUN_LIVONIA_SNAPSHOT_TEST=1`. n8n and servermod have their own offline validation
+commands in their README files.
+
+Run the opt-in local end-to-end smoke test from this repository with the sibling
+`dayz-signal` checkout and its installed dependencies:
+
+```powershell
+node tests/e2e_local.js --signal-root C:\Users\VNemchenko\dayz-signal
+```
+
+The harness uses only loopback sockets and temporary files. It sends synthetic
+ADM and `RB_EVT` lines through the real monitor SQLite/outbox, executes policy
+code directly from the generated n8n workflow JSON with mock LLM and Telegram
+destinations, starts the real `dayz-signal` HTTP service, and finishes at a local
+UDP RCON emulator. It asserts one shared Russian Telegram/game message, Signal's
+ASCII transliteration, and absence of raw UID or exact coordinates from every
+public delivery surface. It never reads or writes `F:\src\livonia`.
+
+This is a bounded success-path smoke test, not an embedded n8n installation: it
+does not exercise Data Tables, credentials, a real LLM/Telegram API, RCON packet
+loss, reconnects or multipart replies. Those remain covered by the component
+test suites and disposable n8n import check. `dayz-signal` declares Node.js 24;
+the summary prints the actual local Node version so an older-runtime run cannot
+be mistaken for the production Node 24 gate.
+
+Recommended rollout:
+
+1. Import n8n workflows disabled, configure Data Tables and credentials.
+2. Enable the event webhook in shadow mode for 48 hours.
+3. Enable deterministic admin Telegram delivery.
+4. Disable `RAW_WEBHOOK_URL` after parity is confirmed; it contains legacy raw data.
+5. Enable public/game routes and their cooldowns.
+6. Keep the legacy main webhook for seven more days, then disable it.
 
 ## Quiet Hours
 

@@ -1,0 +1,482 @@
+{
+  "name": "DayZ | 00 | Bootstrap Data Tables",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "5d9de8b4-5330-49f0-8ca8-6fc0252e15c1",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -900,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "dayz_routes",
+        "columns": {
+          "column": [
+            {
+              "name": "server_id",
+              "type": "string"
+            },
+            {
+              "name": "mode",
+              "type": "string"
+            },
+            {
+              "name": "enabled",
+              "type": "boolean"
+            },
+            {
+              "name": "telegram_enabled",
+              "type": "boolean"
+            },
+            {
+              "name": "telegram_chat_id",
+              "type": "string"
+            },
+            {
+              "name": "game_enabled",
+              "type": "boolean"
+            },
+            {
+              "name": "signal_base_url",
+              "type": "string"
+            },
+            {
+              "name": "llm_enabled",
+              "type": "boolean"
+            },
+            {
+              "name": "llm_base_url",
+              "type": "string"
+            },
+            {
+              "name": "llm_model",
+              "type": "string"
+            },
+            {
+              "name": "timezone",
+              "type": "string"
+            },
+            {
+              "name": "public_delay_seconds",
+              "type": "number"
+            },
+            {
+              "name": "game_cooldown_seconds",
+              "type": "number"
+            },
+            {
+              "name": "rules_message_ru",
+              "type": "string"
+            },
+            {
+              "name": "ops_alerts",
+              "type": "boolean"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "3a7978e1-9e3f-4704-bef7-a605f60f1bf8",
+      "name": "Create dayz_routes",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -680,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "dayz_events",
+        "columns": {
+          "column": [
+            {
+              "name": "record_id",
+              "type": "string"
+            },
+            {
+              "name": "record_kind",
+              "type": "string"
+            },
+            {
+              "name": "batch_id",
+              "type": "string"
+            },
+            {
+              "name": "event_id",
+              "type": "string"
+            },
+            {
+              "name": "server_id",
+              "type": "string"
+            },
+            {
+              "name": "sent_at",
+              "type": "date"
+            },
+            {
+              "name": "received_at",
+              "type": "date"
+            },
+            {
+              "name": "event_type",
+              "type": "string"
+            },
+            {
+              "name": "occurred_at",
+              "type": "date"
+            },
+            {
+              "name": "observed_at",
+              "type": "date"
+            },
+            {
+              "name": "processing_expires_at",
+              "type": "date"
+            },
+            {
+              "name": "severity",
+              "type": "string"
+            },
+            {
+              "name": "audience_ceiling",
+              "type": "string"
+            },
+            {
+              "name": "public_json",
+              "type": "string"
+            },
+            {
+              "name": "admin_json",
+              "type": "string"
+            },
+            {
+              "name": "digest_state",
+              "type": "string"
+            },
+            {
+              "name": "chronicle_state",
+              "type": "string"
+            },
+            {
+              "name": "safety_state",
+              "type": "string"
+            },
+            {
+              "name": "announcement_state",
+              "type": "string"
+            },
+            {
+              "name": "immediate_state",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "payload_json",
+              "type": "string"
+            },
+            {
+              "name": "attempt_count",
+              "type": "number"
+            },
+            {
+              "name": "next_attempt_at",
+              "type": "date"
+            },
+            {
+              "name": "lease_token",
+              "type": "string"
+            },
+            {
+              "name": "last_error",
+              "type": "string"
+            },
+            {
+              "name": "private_expires_at",
+              "type": "date"
+            },
+            {
+              "name": "expires_at",
+              "type": "date"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "f97b0740-99c3-44cb-9fa1-29d498a92236",
+      "name": "Create dayz_events",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "dayz_deliveries",
+        "columns": {
+          "column": [
+            {
+              "name": "delivery_id",
+              "type": "string"
+            },
+            {
+              "name": "event_id",
+              "type": "string"
+            },
+            {
+              "name": "server_id",
+              "type": "string"
+            },
+            {
+              "name": "channel",
+              "type": "string"
+            },
+            {
+              "name": "message",
+              "type": "string"
+            },
+            {
+              "name": "status",
+              "type": "string"
+            },
+            {
+              "name": "attempt_count",
+              "type": "number"
+            },
+            {
+              "name": "next_attempt_at",
+              "type": "date"
+            },
+            {
+              "name": "expires_at",
+              "type": "date"
+            },
+            {
+              "name": "delete_after",
+              "type": "date"
+            },
+            {
+              "name": "last_error",
+              "type": "string"
+            },
+            {
+              "name": "sent_at",
+              "type": "date"
+            },
+            {
+              "name": "created_at",
+              "type": "date"
+            },
+            {
+              "name": "payload_hash",
+              "type": "string"
+            },
+            {
+              "name": "policy_version",
+              "type": "string"
+            },
+            {
+              "name": "message_kind",
+              "type": "string"
+            },
+            {
+              "name": "cooldown_scope",
+              "type": "string"
+            },
+            {
+              "name": "cooldown_seconds",
+              "type": "number"
+            },
+            {
+              "name": "secondary_cooldown_scope",
+              "type": "string"
+            },
+            {
+              "name": "secondary_cooldown_seconds",
+              "type": "number"
+            },
+            {
+              "name": "rate_scope_prefix",
+              "type": "string"
+            },
+            {
+              "name": "rate_slot_scope",
+              "type": "string"
+            },
+            {
+              "name": "lease_token",
+              "type": "string"
+            },
+            {
+              "name": "claimed_at",
+              "type": "date"
+            },
+            {
+              "name": "source_event_ids_json",
+              "type": "string"
+            },
+            {
+              "name": "signal_status_url",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "926fc65d-9f82-4023-8eea-fdbff097941d",
+      "name": "Create dayz_deliveries",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "table",
+        "operation": "create",
+        "tableName": "dayz_cooldowns",
+        "columns": {
+          "column": [
+            {
+              "name": "scope_key",
+              "type": "string"
+            },
+            {
+              "name": "until",
+              "type": "date"
+            },
+            {
+              "name": "last_delivery_id",
+              "type": "string"
+            },
+            {
+              "name": "updated_at",
+              "type": "date"
+            }
+          ]
+        },
+        "options": {
+          "createIfNotExists": true
+        }
+      },
+      "id": "ad6e113e-59f8-468e-b504-4d1afa75e223",
+      "name": "Create dayz_cooldowns",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        40,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { ok: true, schema: 'dayz.bootstrap-result.v1', tables: [\"dayz_routes\",\"dayz_events\",\"dayz_deliveries\",\"dayz_cooldowns\"], next: 'Create one dayz_routes row and replace all credential placeholders before activation.' } }];"
+      },
+      "id": "526e1a69-5a70-43cd-8117-a823f22753a3",
+      "name": "Bootstrap Summary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        280,
+        0
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Create dayz_routes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create dayz_routes": {
+      "main": [
+        [
+          {
+            "node": "Create dayz_events",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create dayz_events": {
+      "main": [
+        [
+          {
+            "node": "Create dayz_deliveries",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create dayz_deliveries": {
+      "main": [
+        [
+          {
+            "node": "Create dayz_cooldowns",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create dayz_cooldowns": {
+      "main": [
+        [
+          {
+            "node": "Bootstrap Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "timezone": "Europe/Moscow",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "8d7bda12-2c71-4445-9bb9-dc25cce3a832",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

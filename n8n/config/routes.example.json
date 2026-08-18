@@ -1,0 +1,22 @@
+{
+  "schema": "dayz.routes.v1",
+  "rows": [
+    {
+      "server_id": "livonia-1",
+      "mode": "shadow",
+      "enabled": false,
+      "telegram_enabled": false,
+      "telegram_chat_id": "REPLACE_ME",
+      "game_enabled": false,
+      "signal_base_url": "https://signal.example.invalid",
+      "llm_enabled": false,
+      "llm_base_url": "https://llm.example.invalid/v1/chat/completions",
+      "llm_model": "REPLACE_ME",
+      "timezone": "Europe/Moscow",
+      "public_delay_seconds": 600,
+      "game_cooldown_seconds": 120,
+      "rules_message_ru": "",
+      "ops_alerts": true
+    }
+  ]
+}

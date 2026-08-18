@@ -1,0 +1,56 @@
+{
+  "schema": "dayz.n8n-bundle.v1",
+  "bundle_version": "1.0.0",
+  "target": {
+    "product": "n8n",
+    "minimum_version": "2.6.4",
+    "timezone": "Europe/Moscow"
+  },
+  "generator": "tools/build_workflows.js",
+  "workflows": [
+    {"order": 0, "file": "workflows/00-bootstrap-data-tables.json", "purpose": "create named Data Tables", "activate": false},
+    {"order": 10, "file": "workflows/10-event-gateway.json", "purpose": "authenticated batch ingest, validation and deduplication", "activate": true},
+    {"order": 15, "file": "workflows/15-batch-processor.json", "purpose": "durable normalized batch expansion", "activate": true},
+    {"order": 20, "file": "workflows/20-digest-llm-publisher.json", "purpose": "commands, admin alerts, safe world announcements, chronicle and public digest wording", "activate": true},
+    {"order": 30, "file": "workflows/30-delivery-retry-cleanup.json", "purpose": "leased delivery, Signal status polling, retry, rate limits and retention cleanup", "activate": true},
+    {"order": 90, "file": "workflows/90-error-alert.json", "purpose": "sanitized workflow failure alert", "activate": true}
+  ],
+  "data_tables": [
+    {"name": "dayz_routes", "natural_key": ["server_id"], "purpose": "per-server route and rollout switches"},
+    {"name": "dayz_events", "natural_key": ["record_id"], "purpose": "namespaced durable batch ledger plus separate admin/public event projections"},
+    {"name": "dayz_deliveries", "natural_key": ["delivery_id"], "purpose": "leased outbound delivery state"},
+    {"name": "dayz_cooldowns", "natural_key": ["scope_key"], "purpose": "game-channel cooldown state"}
+  ],
+  "credentials": [
+    {"placeholder_id": "00000000-0000-4000-8000-000000000001", "type": "httpHeaderAuth", "name": "REPLACE: DayZ Ingest Header Auth", "expected_header": "X-DayZ-Key"},
+    {"placeholder_id": "00000000-0000-4000-8000-000000000002", "type": "httpHeaderAuth", "name": "REPLACE: DayZ LLM Header Auth", "expected_header": "Authorization"},
+    {"placeholder_id": "00000000-0000-4000-8000-000000000003", "type": "httpHeaderAuth", "name": "REPLACE: DayZ Signal Header Auth", "expected_header": "x-api-key"},
+    {"placeholder_id": "00000000-0000-4000-8000-000000000004", "type": "telegramApi", "name": "REPLACE: DayZ Telegram Bot"}
+  ],
+  "contracts": {
+    "ingest_path": "dayz/events/v1",
+    "ingest_schema": "schemas/dayz.event-batch.v1.schema.json",
+    "event_schema": "schemas/dayz.event.v1.schema.json",
+    "command_schema": "schemas/dayz.command.v1.schema.json",
+    "signal_response_schema": "schemas/dayz.signal-response.v1.schema.json",
+    "llm_response_schema": "schemas/dayz.llm-digest.v1.schema.json",
+    "ingest_auth_header": "X-DayZ-Key",
+    "ingest_idempotency_header": "Idempotency-Key",
+    "signal_path": "/v1/broadcasts",
+    "signal_idempotency_header": "Idempotency-Key"
+  },
+  "configuration": {
+    "policy": "config/policy.v1.json",
+    "routes_example": "config/routes.example.json",
+    "digest_system_prompt": "prompts/digest_system.txt",
+    "digest_user_prompt": "prompts/digest_user.txt"
+  },
+  "safe_defaults": {
+    "all_workflows_import_inactive": true,
+    "route_mode": "shadow",
+    "route_enabled": false,
+    "external_channels_enabled": false,
+    "execution_payload_storage": false,
+    "contains_secrets": false
+  }
+}

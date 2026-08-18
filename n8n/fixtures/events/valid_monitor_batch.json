@@ -1,0 +1,60 @@
+{
+  "schema": "dayz.event-batch.v1",
+  "batch_id": "batch_ef5b27b3fd869e03826be17243166165",
+  "sent_at": "2030-01-01T12:00:00Z",
+  "producer": {"name": "dayz-log-monitor", "source": "livonia"},
+  "events": [
+    {
+      "schema": "dayz.event.v1",
+      "event_id": "evt_5a94cf19a53d146d6515b6faebd8adac",
+      "server_id": "livonia-1",
+      "type": "player.sos",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "observed_at": "2030-01-01T12:00:00Z",
+      "expires_at": "2030-01-01T12:05:00Z",
+      "severity": "warning",
+      "audience_ceiling": "public",
+      "admin_view": {
+        "actor": {"ref": "p_81322667ed68013f1f2d", "display_name": "Player One"},
+        "location": {"x": 4250.0, "y": 12.0, "z": 8100.0, "grid_100m": "042-081", "precision": "exact"},
+        "method": "command"
+      },
+      "public_view": {"acknowledgement": "sos_received"},
+      "facts": {"actor_ref": "p_81322667ed68013f1f2d", "command": "sos", "method": "command"},
+      "source": {"kind": "adm", "file": "DayZServer_2030-01-01_12-00-00.ADM", "offset_start": 0, "offset_end": 73}
+    },
+    {
+      "schema": "dayz.event.v1",
+      "event_id": "evt_ef3abb21405a51ecf54f3d3a456dbad6",
+      "server_id": "livonia-1",
+      "type": "world.event.started",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "observed_at": "2030-01-01T12:00:00Z",
+      "expires_at": "2030-01-01T13:00:00Z",
+      "severity": "warning",
+      "audience_ceiling": "public_delayed",
+      "admin_view": {
+        "telemetry": {"kind": "heli_crash", "x": 4100.0, "y": 12.0, "z": 8700.0},
+        "location": {"x": 4100.0, "y": 12.0, "z": 8700.0, "grid_100m": "041-087", "precision": "exact"}
+      },
+      "public_view": {"lifecycle": "started", "kind": "heli_crash", "location": {"sector": "C5", "size_m": 2000, "precision": "coarse"}},
+      "facts": {"telemetry_event_id": "20300101T115500Z:7", "catalog_revision": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"},
+      "source": {"kind": "adm", "file": "DayZServer_2030-01-01_12-00-00.ADM", "offset_start": 200, "offset_end": 548}
+    },
+    {
+      "schema": "dayz.event.v1",
+      "event_id": "evt_9550b478391c25085ecfa1293a840d3c",
+      "server_id": "livonia-1",
+      "type": "server.restart_due",
+      "occurred_at": "2030-01-01T12:00:00Z",
+      "observed_at": "2030-01-01T12:00:00Z",
+      "expires_at": "2030-01-01T13:00:00Z",
+      "severity": "warning",
+      "audience_ceiling": "public",
+      "admin_view": {"error_class": "restart_due"},
+      "public_view": {"restart_in_seconds": 300},
+      "facts": {"fingerprint": "e7c8616ceaf215da9dd4a6f1c778c1e85d6012ff7ae9d518d240c2243fb76e2a", "error_class": "restart_due"},
+      "source": {"kind": "rpt", "file": "DayZServer_2030-01-01_12-00-00.RPT", "offset_start": 500, "offset_end": 551}
+    }
+  ]
+}

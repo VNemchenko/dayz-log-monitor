@@ -1,0 +1,612 @@
+{
+  "name": "DayZ | 10 | Event Gateway",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "dayz/events/v1",
+        "authentication": "headerAuth",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "d12634bc-a5b4-4596-8510-ff4e53dffce1",
+      "name": "Authenticated Event Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -1100,
+        0
+      ],
+      "webhookId": "fe7aa7c3-36bd-4d4f-8395-6c8c81a273c2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "00000000-0000-4000-8000-000000000001",
+          "name": "REPLACE: DayZ Ingest Header Auth"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const POLICY = {\"schema\":\"dayz.policy.v1\",\"version\":\"dayz-policy-v1\",\"limits\":{\"batch_max_bytes\":262144,\"batch_max_events\":100,\"batch_max_attempts\":5,\"event_max_bytes\":65536,\"event_max_age_hours\":72,\"event_max_future_seconds\":300,\"processing_ttl_max_seconds\":86400,\"private_retention_hours\":24,\"event_retention_hours\":72,\"delivery_retention_days\":14,\"public_delay_seconds\":600,\"game_message_max_chars\":160,\"signal_ttl_max_seconds\":300,\"telegram_message_max_chars\":3500,\"public_message_max_chars\":120,\"snapshot_fresh_seconds\":180,\"command_player_cooldown_seconds\":60,\"command_global_cooldown_seconds\":15,\"auto_game_min_interval_seconds\":120,\"auto_game_max_per_10_minutes\":3,\"auto_game_window_seconds\":600,\"game_global_cooldown_seconds\":120,\"digest_window_seconds\":3600,\"chronicle_window_seconds\":3600,\"chronicle_min_significant_events\":3,\"batch_lease_seconds\":300,\"delivery_lease_seconds\":30,\"delivery_scan_interval_seconds\":60,\"signal_reconcile_buffer_seconds\":15,\"delivery_max_attempts\":3,\"delivery_retry_seconds\":[30,120]},\"event_types\":{\"player.command\":{\"max_audience\":\"public\",\"immediate_channels\":[\"game\"],\"digest\":false},\"player.sos\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.admin_message\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"player.connected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.disconnected\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.unconscious\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"player.suicide\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.death\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"player.killed\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.pvp_kill\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.explosion\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.trap\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"combat.infected_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.vehicle_incident\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"combat.wildlife_pressure\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":false,\"chronicle\":true},\"base.placed\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.built\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"base.dismantled\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.started\":{\"max_audience\":\"admin\",\"immediate_channels\":[],\"digest\":false},\"telemetry.stopped\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"telemetry.error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.snapshot\":{\"max_audience\":\"public\",\"immediate_channels\":[],\"digest\":true},\"world.event.present\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.started\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.updated\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"world.event.ended\":{\"max_audience\":\"public_delayed\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.started\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.restart_due\":{\"max_audience\":\"public\",\"immediate_channels\":[\"telegram\",\"game\"],\"digest\":false},\"server.stopping\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.economy_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.script_error\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"server.telemetry_stale\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_anomaly\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false},\"storage.health_recovered\":{\"max_audience\":\"admin\",\"immediate_channels\":[\"telegram\"],\"digest\":false}}};\nconst body = ($json && $json.body && typeof $json.body === 'object') ? $json.body : $json;\nconst headers = ($json && $json.headers && typeof $json.headers === 'object') ? $json.headers : {};\nconst now = (typeof __TEST_NOW__ !== 'undefined') ? new Date(__TEST_NOW__) : new Date();\n\nfunction resultError(code, message, status = 400) {\n  return [{ json: {\n    valid: false,\n    http_status: status,\n    response: { schema: 'dayz.ingest-response.v1', accepted: false, error: code, message },\n  } }];\n}\n\nfunction utf8Length(value) {\n  let bytes = 0;\n  for (const char of value) {\n    const cp = char.codePointAt(0);\n    bytes += cp <= 0x7f ? 1 : cp <= 0x7ff ? 2 : cp <= 0xffff ? 3 : 4;\n  }\n  return bytes;\n}\n\nfunction cleanText(value, maxLength) {\n  return String(value ?? '').replace(/[\\u0000-\\u001f\\u007f]+/g, ' ').replace(/\\s+/g, ' ').trim().slice(0, maxLength);\n}\n\nfunction isPlainObject(value) {\n  return Boolean(value) && typeof value === 'object' && !Array.isArray(value);\n}\n\nfunction validateBoundedTree(value, path = '', depth = 0) {\n  if (depth > 7) return path || '$';\n  if (Array.isArray(value)) {\n    if (value.length > 128) return path || '$';\n    for (let i = 0; i < value.length; i += 1) {\n      const hit = validateBoundedTree(value[i], path + '[' + i + ']', depth + 1);\n      if (hit) return hit;\n    }\n    return null;\n  }\n  if (isPlainObject(value)) {\n    if (Object.keys(value).length > 128) return path || '$';\n    for (const [key, child] of Object.entries(value)) {\n      if (!/^[A-Za-z][A-Za-z0-9_.-]{0,79}$/.test(key)) return path + '.' + key;\n      const hit = validateBoundedTree(child, path + '.' + key, depth + 1);\n      if (hit) return hit;\n    }\n    return null;\n  }\n  if (typeof value === 'string') {\n    if (value.length > 1000 || /[\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]/.test(value)) return path || '$';\n    return null;\n  }\n  if (value === null || typeof value === 'boolean') return null;\n  if (typeof value === 'number' && Number.isFinite(value)) return null;\n  return path || '$';\n}\n\nfunction findForbiddenIdentity(value, path = '') {\n  if (Array.isArray(value)) {\n    for (let i = 0; i < value.length; i += 1) {\n      const hit = findForbiddenIdentity(value[i], path + '[' + i + ']');\n      if (hit) return hit;\n    }\n    return null;\n  }\n  if (isPlainObject(value)) {\n    for (const [key, child] of Object.entries(value)) {\n      if (/^(uid|guid|steam_?id|player_?id|identity_?id|raw|raw_?line|log_?line)$/i.test(key)) return path + '.' + key;\n      if ((key === 'ref' || /_ref$/i.test(key)) && typeof child === 'string' && !/^p_[0-9a-f]{20}$/.test(child)) return path + '.' + key;\n      const hit = findForbiddenIdentity(child, path + '.' + key);\n      if (hit) return hit;\n    }\n    return null;\n  }\n  if (typeof value === 'string' && /\\bid\\s*=|\\bsteam(?:id)?\\b/i.test(value)) return path || '$';\n  return null;\n}\n\nfunction findUnsafePublic(value, path = '') {\n  if (Array.isArray(value)) {\n    for (let i = 0; i < value.length; i += 1) {\n      const hit = findUnsafePublic(value[i], path + '[' + i + ']');\n      if (hit) return hit;\n    }\n    return null;\n  }\n  if (isPlainObject(value)) {\n    for (const [key, child] of Object.entries(value)) {\n      if (/^(actor|attacker|target|ref|id|display_name|grid_100m|source|file|x|y|z|pos|position|coordinates|lat|lon|latitude|longitude)$/i.test(key) || /_ref$/i.test(key)) return path + '.' + key;\n      if (key === 'location' && isPlainObject(child)) {\n        if (child.precision !== 'coarse') return path + '.location.precision';\n      }\n      const hit = findUnsafePublic(child, path + '.' + key);\n      if (hit) return hit;\n    }\n    return null;\n  }\n  if (typeof value === 'string' && (/https?:\\/\\//i.test(value) || /\\bid\\s*=/i.test(value) || /\\b[0-9a-f]{32,64}\\b/i.test(value) || /(?:^|\\D)-?\\d{2,5}(?:\\.\\d+)?\\s*[,;\\/]\\s*-?\\d{2,5}(?:\\.\\d+)?(?:\\D|$)/.test(value))) return path || '$';\n  return null;\n}\n\nfunction normalizePublicView(eventType, value) {\n  const failure = (reason) => ({ ok: false, reason, value: null });\n  const success = (safeValue) => ({ ok: true, reason: '', value: safeValue });\n  const exactKeys = (object, allowed, required = allowed) => {\n    if (!isPlainObject(object)) return false;\n    const keys = Object.keys(object);\n    return keys.every((key) => allowed.includes(key)) && required.every((key) => key in object);\n  };\n  const finite = (candidate, minimum, maximum) => typeof candidate === 'number' && Number.isFinite(candidate) && candidate >= minimum && candidate <= maximum;\n  const integer = (candidate, minimum, maximum) => Number.isInteger(candidate) && candidate >= minimum && candidate <= maximum;\n  const publicTypes = new Set([\n    'player.command','player.sos','player.admin_message',\n    'combat.infected_pressure','combat.vehicle_incident','combat.wildlife_pressure',\n    'world.snapshot','world.event.present','world.event.started','world.event.updated','world.event.ended',\n    'server.started','server.restart_due',\n  ]);\n  if (!publicTypes.has(eventType)) return value === null ? success(null) : failure('public_view_not_allowed');\n  if (!isPlainObject(value)) return failure('public_view_required');\n  if (findUnsafePublic(value)) return failure('unsafe_public_value');\n\n  if (eventType === 'player.command') {\n    if (!exactKeys(value, ['command']) || !['status','weather','time','rules'].includes(value.command)) return failure('invalid_command_projection');\n    return success({ command: value.command });\n  }\n  if (eventType === 'player.sos' || eventType === 'player.admin_message') {\n    const expected = eventType === 'player.sos' ? 'sos_received' : 'admin_message_received';\n    if (!exactKeys(value, ['acknowledgement']) || value.acknowledgement !== expected) return failure('invalid_acknowledgement_projection');\n    return success({ acknowledgement: expected });\n  }\n  if (['combat.infected_pressure','combat.vehicle_incident','combat.wildlife_pressure'].includes(eventType)) {\n    const expected = eventType.slice('combat.'.length);\n    if (!exactKeys(value, ['episode_type','signal_count']) || value.episode_type !== expected || !integer(value.signal_count,1,1000)) return failure('invalid_chronicle_projection');\n    return success({ episode_type: expected, signal_count: value.signal_count });\n  }\n  if (eventType === 'server.started') {\n    if (!exactKeys(value, ['status']) || value.status !== 'started') return failure('invalid_server_projection');\n    return success({ status: 'started' });\n  }\n  if (eventType === 'server.restart_due') {\n    if (!exactKeys(value, ['restart_in_seconds']) || !integer(value.restart_in_seconds,0,86400)) return failure('invalid_restart_projection');\n    return success({ restart_in_seconds: value.restart_in_seconds });\n  }\n  if (eventType.startsWith('world.event.')) {\n    if (!exactKeys(value, ['lifecycle','kind','location'], ['lifecycle','kind'])) return failure('invalid_world_event_projection');\n    const lifecycle = eventType.slice('world.event.'.length);\n    if (value.lifecycle !== lifecycle || typeof value.kind !== 'string' || !/^[a-z][a-z0-9_]{0,63}$/.test(value.kind)) return failure('invalid_world_event_identity');\n    const safe = { lifecycle, kind: value.kind };\n    if ('location' in value) {\n      const location = value.location;\n      if (!exactKeys(location, ['sector','size_m','precision']) || typeof location.sector !== 'string' || !/^[A-Z][A-Z0-9-]{0,11}$/.test(location.sector) || location.size_m !== 2000 || location.precision !== 'coarse') return failure('invalid_coarse_location');\n      safe.location = { sector: location.sector, size_m: 2000, precision: 'coarse' };\n    }\n    return success(safe);\n  }\n  if (eventType === 'world.snapshot') {\n    if (!exactKeys(value, ['game_time','weather','players_online'], [])) return failure('invalid_snapshot_projection');\n    const safe = {};\n    if ('players_online' in value) {\n      if (!integer(value.players_online,0,500)) return failure('invalid_snapshot_players');\n      safe.players_online = value.players_online;\n    }\n    if ('game_time' in value) {\n      const game = value.game_time;\n      const allowed = ['year','month','day','hour','minute','decimal_hour','is_night'];\n      if (!exactKeys(game, allowed, [])) return failure('invalid_snapshot_time');\n      const ranges = { year:[2000,2200], month:[1,12], day:[1,31], hour:[0,23], minute:[0,59], decimal_hour:[0,24] };\n      const safeGame = {};\n      for (const [key,range] of Object.entries(ranges)) if (key in game) {\n        const valid = key === 'decimal_hour' ? finite(game[key],range[0],range[1]) : integer(game[key],range[0],range[1]);\n        if (!valid) return failure('invalid_snapshot_time_value');\n        safeGame[key] = game[key];\n      }\n      if ('is_night' in game) {\n        if (typeof game.is_night !== 'boolean') return failure('invalid_snapshot_night');\n        safeGame.is_night = game.is_night;\n      }\n      safe.game_time = safeGame;\n    }\n    if ('weather' in value) {\n      const weather = value.weather;\n      const phenomena = ['overcast','rain','fog','snowfall','wind_magnitude','wind_direction'];\n      if (!exactKeys(weather, phenomena.concat(['base_environment_temperature_c']), [])) return failure('invalid_snapshot_weather');\n      const safeWeather = {};\n      for (const name of phenomena) if (name in weather) {\n        const part = weather[name];\n        if (!exactKeys(part, ['actual','forecast','next_change_seconds'], [])) return failure('invalid_snapshot_weather_part');\n        const safePart = {};\n        for (const field of ['actual','forecast']) if (field in part) {\n          if (!finite(part[field],-1000,1000)) return failure('invalid_snapshot_weather_value');\n          safePart[field] = part[field];\n        }\n        if ('next_change_seconds' in part) {\n          if (!finite(part.next_change_seconds,0,86400)) return failure('invalid_snapshot_weather_change');\n          safePart.next_change_seconds = part.next_change_seconds;\n        }\n        safeWeather[name] = safePart;\n      }\n      if ('base_environment_temperature_c' in weather) {\n        if (!finite(weather.base_environment_temperature_c,-100,100)) return failure('invalid_snapshot_temperature');\n        safeWeather.base_environment_temperature_c = weather.base_environment_temperature_c;\n      }\n      safe.weather = safeWeather;\n    }\n    return success(safe);\n  }\n  return failure('unsupported_public_projection');\n}\n\nif (!isPlainObject(body)) return resultError('invalid_body', 'Body must be one JSON object.');\nconst serialized = JSON.stringify(body);\nif (utf8Length(serialized) > POLICY.limits.batch_max_bytes) return resultError('payload_too_large', 'Batch exceeds size limit.', 413);\nconst batchAllowed = new Set(['schema','batch_id','sent_at','producer','events']);\nfor (const key of Object.keys(body)) if (!batchAllowed.has(key)) return resultError('unknown_batch_field', 'Unknown batch field: ' + key);\nfor (const key of batchAllowed) if (!(key in body)) return resultError('missing_batch_field', 'Missing batch field: ' + key);\nif (body.schema !== 'dayz.event-batch.v1') return resultError('unsupported_schema', 'Only dayz.event-batch.v1 is accepted.');\nif (!/^batch_[0-9a-f]{32}$/.test(String(body.batch_id))) return resultError('invalid_batch_id', 'Invalid batch_id.');\nconst idempotencyKey = String(headers['idempotency-key'] ?? headers['Idempotency-Key'] ?? '');\nif (idempotencyKey !== body.batch_id) return resultError('idempotency_mismatch', 'Idempotency-Key must equal batch_id.', 409);\nconst sentAt = new Date(body.sent_at);\nif (!Number.isFinite(sentAt.getTime())) return resultError('invalid_sent_at', 'sent_at must be RFC3339.');\nif (sentAt.getTime() > now.getTime() + POLICY.limits.event_max_future_seconds * 1000) return resultError('batch_from_future', 'sent_at is too far in the future.');\nif (now.getTime() - sentAt.getTime() > POLICY.limits.event_max_age_hours * 3600000) return resultError('batch_too_old', 'Batch is outside the ingestion window.');\nif (!isPlainObject(body.producer)) return resultError('invalid_producer', 'producer must be an object.');\nfor (const key of Object.keys(body.producer)) if (!['name','source'].includes(key)) return resultError('invalid_producer', 'Unknown producer field.');\nif (body.producer.name !== 'dayz-log-monitor' || typeof body.producer.source !== 'string' || !body.producer.source.trim() || body.producer.source.length > 80) return resultError('invalid_producer', 'Invalid producer identity.');\nif (!Array.isArray(body.events) || body.events.length < 1 || body.events.length > POLICY.limits.batch_max_events) return resultError('invalid_events', 'events must contain 1..' + POLICY.limits.batch_max_events + ' items.');\n\nconst eventAllowed = new Set(['schema','event_id','server_id','type','occurred_at','observed_at','expires_at','severity','audience_ceiling','admin_view','public_view','facts','source']);\nconst sourceKinds = new Set(['adm','rpt','script','error','monitor','storage']);\nconst audienceRank = { admin: 0, public_delayed: 1, public: 2 };\nconst seenEventIds = new Set();\nconst normalizedEvents = [];\nlet serverId = '';\nfor (let index = 0; index < body.events.length; index += 1) {\n  const event = body.events[index];\n  const prefix = 'events[' + index + ']';\n  if (!isPlainObject(event)) return resultError('invalid_event', prefix + ' must be an object.', 422);\n  if (utf8Length(JSON.stringify(event)) > POLICY.limits.event_max_bytes) return resultError('event_too_large', prefix + ' exceeds size limit.', 413);\n  for (const key of Object.keys(event)) if (!eventAllowed.has(key)) return resultError('unknown_event_field', prefix + ' has unknown field: ' + key, 422);\n  for (const key of eventAllowed) if (!(key in event)) return resultError('missing_event_field', prefix + ' is missing: ' + key, 422);\n  if (event.schema !== 'dayz.event.v1') return resultError('unsupported_event_schema', prefix + ' has an unsupported schema.', 422);\n  if (!/^evt_[0-9a-f]{32}$/.test(String(event.event_id)) || seenEventIds.has(event.event_id)) return resultError('invalid_event_id', prefix + ' has an invalid or duplicate event_id.', 422);\n  seenEventIds.add(event.event_id);\n  if (!/^[a-z0-9][a-z0-9_-]{1,47}$/.test(String(event.server_id))) return resultError('invalid_server_id', prefix + ' has an invalid server_id.', 422);\n  if (!serverId) serverId = event.server_id;\n  if (serverId !== event.server_id) return resultError('mixed_server_batch', 'All events in a batch must have one server_id.', 422);\n  const rule = POLICY.event_types[event.type];\n  if (!rule) return resultError('unknown_event_type', prefix + ' type is not allowlisted.', 422);\n  if (!['info','warning','critical'].includes(event.severity)) return resultError('invalid_severity', prefix + ' has invalid severity.', 422);\n  if (!(event.audience_ceiling in audienceRank) || audienceRank[event.audience_ceiling] > audienceRank[rule.max_audience]) return resultError('invalid_audience', prefix + ' exceeds the policy audience ceiling.', 422);\n  const occurredAt = new Date(event.occurred_at);\n  const observedAt = new Date(event.observed_at);\n  const processingExpiresAt = new Date(event.expires_at);\n  if (![occurredAt, observedAt, processingExpiresAt].every((value) => Number.isFinite(value.getTime()))) return resultError('invalid_timestamp', prefix + ' has an invalid timestamp.', 422);\n  if (occurredAt.getTime() > now.getTime() + POLICY.limits.event_max_future_seconds * 1000) return resultError('event_from_future', prefix + ' occurred_at is too far in the future.', 422);\n  if (now.getTime() - occurredAt.getTime() > POLICY.limits.event_max_age_hours * 3600000) return resultError('event_too_old', prefix + ' is outside the ingestion window.', 422);\n  if (processingExpiresAt.getTime() <= now.getTime()) return resultError('event_expired', prefix + ' processing deadline has passed.', 422);\n  if (processingExpiresAt.getTime() - occurredAt.getTime() > POLICY.limits.processing_ttl_max_seconds * 1000) return resultError('invalid_expiry', prefix + ' processing TTL is too large.', 422);\n  if (!isPlainObject(event.admin_view) || !isPlainObject(event.facts)) return resultError('invalid_private_projection', prefix + ' admin_view and facts must be objects.', 422);\n  if (event.public_view !== null && !isPlainObject(event.public_view)) return resultError('invalid_public_projection', prefix + ' public_view must be an object or null.', 422);\n  const boundedHit = validateBoundedTree({ admin_view: event.admin_view, public_view: event.public_view, facts: event.facts });\n  if (boundedHit) return resultError('projection_too_complex', prefix + ' contains an invalid or oversized value.', 422);\n  const identityHit = findForbiddenIdentity({ admin_view: event.admin_view, facts: event.facts });\n  if (identityHit) return resultError('forbidden_private_field', prefix + ' contains raw identity or raw log data.', 422);\n  const publicProjection = normalizePublicView(event.type,event.public_view);\n  if (!publicProjection.ok) return resultError('unsafe_public_projection', prefix + ' public_view crosses the privacy boundary: ' + publicProjection.reason, 422);\n  const safePublicView = publicProjection.value;\n  if (!isPlainObject(event.source)) return resultError('invalid_source', prefix + ' source must be an object.', 422);\n  for (const key of Object.keys(event.source)) if (!['kind','file','offset_start','offset_end'].includes(key)) return resultError('invalid_source', prefix + ' source has an unknown field.', 422);\n  if (!sourceKinds.has(event.source.kind) || typeof event.source.file !== 'string' || !event.source.file || event.source.file.length > 180 || /[\\/\\\\]/.test(event.source.file)) return resultError('invalid_source', prefix + ' source identity is invalid.', 422);\n  if (!Number.isInteger(event.source.offset_start) || !Number.isInteger(event.source.offset_end) || event.source.offset_start < 0 || event.source.offset_end < event.source.offset_start) return resultError('invalid_source', prefix + ' source offsets are invalid.', 422);\n  const safeAcknowledgement = ['player.sos','player.admin_message'].includes(event.type)\n    && isPlainObject(safePublicView)\n    && ['sos_received','admin_message_received'].includes(safePublicView.acknowledgement);\n  const hasPublicProjection = safePublicView !== null && (event.audience_ceiling !== 'admin' || safeAcknowledgement);\n  const interactiveGameReply = ['player.command','player.sos','player.admin_message'].includes(event.type);\n  const immediateChannels = rule.immediate_channels.filter((channel) => channel !== 'game' || interactiveGameReply || hasPublicProjection && event.audience_ceiling === 'public');\n  const worldLifecycle = event.type.startsWith('world.event.');\n  const safetyWarning = hasPublicProjection && worldLifecycle && safePublicView.kind === 'contaminated_area';\n  const delayedAnnouncement = hasPublicProjection && worldLifecycle && ['heli_crash','military_convoy','train','police_situation'].includes(String(safePublicView.kind || ''));\n  const digestState = rule.digest && hasPublicProjection && !worldLifecycle ? 'pending' : 'none';\n  const chronicleEligible = rule.chronicle && hasPublicProjection && event.audience_ceiling === 'public';\n  const chronicleState = chronicleEligible ? 'pending' : 'none';\n  const chroniclePrivate = chronicleEligible ? {\n    actor_ref: /^p_[0-9a-f]{20}$/.test(String(event.facts.actor_ref || '')) ? event.facts.actor_ref : '',\n    sector_2km: /^[A-Z][A-Z0-9-]{0,11}$/.test(String(event.facts.sector_2km || '')) ? event.facts.sector_2km : '',\n  } : null;\n  normalizedEvents.push({\n    batch_id: body.batch_id,\n    event_id: event.event_id,\n    server_id: event.server_id,\n    event_type: event.type,\n    occurred_at: occurredAt.toISOString(),\n    observed_at: observedAt.toISOString(),\n    severity: event.severity,\n    audience_ceiling: event.audience_ceiling,\n    processing_expires_at: processingExpiresAt.toISOString(),\n    admin_view: event.admin_view,\n    public_view: hasPublicProjection ? safePublicView : null,\n    chronicle_private: chroniclePrivate,\n    routing: { immediate_channels: immediateChannels, digest_state: digestState, chronicle_state: chronicleState, safety_state: safetyWarning ? 'pending' : 'none', announcement_state: delayedAnnouncement ? 'pending' : 'none' },\n  });\n}\n\nconst privateExpiresAt = new Date(now.getTime() + POLICY.limits.private_retention_hours * 3600000);\nconst retentionExpiresAt = new Date(now.getTime() + POLICY.limits.event_retention_hours * 3600000);\n\nreturn [{ json: {\n  valid: true,\n  http_status: 202,\n  batch_row: {\n    record_id: 'batch:' + body.batch_id,\n    record_kind: 'batch',\n    batch_id: body.batch_id,\n    server_id: serverId,\n    sent_at: sentAt.toISOString(),\n    received_at: now.toISOString(),\n    status: 'queued',\n    payload_json: JSON.stringify({ schema: 'dayz.normalized-batch.v1', batch_id: body.batch_id, events: normalizedEvents }),\n    attempt_count: 0,\n    next_attempt_at: now.toISOString(),\n    lease_token: '',\n    last_error: '',\n    private_expires_at: privateExpiresAt.toISOString(),\n    expires_at: retentionExpiresAt.toISOString(),\n  },\n  response: { schema: 'dayz.ingest-response.v1', accepted: true, duplicate: false, batch_id: body.batch_id, event_count: normalizedEvents.length },\n} }];"
+      },
+      "id": "8f748ee0-023c-49a3-acde-69044246594c",
+      "name": "Validate and Normalize Batch",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -860,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b6d98236-5664-4ebf-9ed4-23f1dc9b16df",
+              "leftValue": "={{ $json.valid }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "987518b7-1a57-49f4-b2e8-7495b389ebc0",
+      "name": "Batch Is Valid",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -620,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json.response }}",
+        "options": {
+          "responseCode": "={{ $json.http_status }}"
+        }
+      },
+      "id": "cdf66aa4-7b87-4b00-924c-361c09cd2e7e",
+      "name": "Reject Event Batch",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        -380,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "record_id",
+              "condition": "eq",
+              "keyValue": "={{ $json.batch_row.record_id }}"
+            }
+          ]
+        },
+        "returnAll": false,
+        "limit": 1
+      },
+      "id": "80b70933-606e-48f6-84d9-1948179bb338",
+      "name": "Get Existing Batch",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        -380,
+        -120
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const normalized = $('Validate and Normalize Batch').item.json;\nconst existing = $json || {};\nconst duplicate = existing.record_id === normalized.batch_row.record_id;\nreturn { json: { ...normalized, duplicate } };",
+        "mode": "runOnceForEachItem"
+      },
+      "id": "fb95b187-4b7a-4c1d-b11c-b905c24e00fb",
+      "name": "Classify Batch Ledger",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -140,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "b9a55777-ba99-495e-b4ba-dcfa8b356f3e",
+              "leftValue": "={{ $json.duplicate === true }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3587622-ef90-4ee1-9540-63d99796ca52",
+      "name": "Batch Already Exists",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        100,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "value": "dayz_events",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "record_id": "={{ $json.batch_row.record_id }}",
+            "record_kind": "={{ $json.batch_row.record_kind }}",
+            "batch_id": "={{ $json.batch_row.batch_id }}",
+            "server_id": "={{ $json.batch_row.server_id }}",
+            "sent_at": "={{ $json.batch_row.sent_at }}",
+            "received_at": "={{ $json.batch_row.received_at }}",
+            "status": "={{ $json.batch_row.status }}",
+            "payload_json": "={{ $json.batch_row.payload_json }}",
+            "attempt_count": "={{ $json.batch_row.attempt_count }}",
+            "next_attempt_at": "={{ $json.batch_row.next_attempt_at }}",
+            "lease_token": "={{ $json.batch_row.lease_token }}",
+            "last_error": "={{ $json.batch_row.last_error }}",
+            "private_expires_at": "={{ $json.batch_row.private_expires_at }}",
+            "expires_at": "={{ $json.batch_row.expires_at }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "record_id",
+              "displayName": "record_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "record_kind",
+              "displayName": "record_kind",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "batch_id",
+              "displayName": "batch_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_id",
+              "displayName": "event_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "server_id",
+              "displayName": "server_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent_at",
+              "displayName": "sent_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "received_at",
+              "displayName": "received_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "event_type",
+              "displayName": "event_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "occurred_at",
+              "displayName": "occurred_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "observed_at",
+              "displayName": "observed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "processing_expires_at",
+              "displayName": "processing_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "severity",
+              "displayName": "severity",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "audience_ceiling",
+              "displayName": "audience_ceiling",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "public_json",
+              "displayName": "public_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "admin_json",
+              "displayName": "admin_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "digest_state",
+              "displayName": "digest_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "chronicle_state",
+              "displayName": "chronicle_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "safety_state",
+              "displayName": "safety_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "announcement_state",
+              "displayName": "announcement_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "immediate_state",
+              "displayName": "immediate_state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "payload_json",
+              "displayName": "payload_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "attempt_count",
+              "displayName": "attempt_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "next_attempt_at",
+              "displayName": "next_attempt_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "lease_token",
+              "displayName": "lease_token",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "last_error",
+              "displayName": "last_error",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "private_expires_at",
+              "displayName": "private_expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "expires_at",
+              "displayName": "expires_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "date",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "51e8f15e-07c5-4aba-b533-ab0784793eed",
+      "name": "Persist New Batch",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        120,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $('Validate and Normalize Batch').item.json.response }}",
+        "options": {
+          "responseCode": 202
+        }
+      },
+      "id": "77afef53-892f-4658-bbaf-b48defa54d52",
+      "name": "Acknowledge Accepted Batch",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        360,
+        -160
+      ]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ {...$('Validate and Normalize Batch').item.json.response,duplicate:true} }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "id": "d375229c-9ebd-4892-a89f-5148784c5650",
+      "name": "Acknowledge Duplicate Batch",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        120,
+        80
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Authenticated Event Webhook": {
+      "main": [
+        [
+          {
+            "node": "Validate and Normalize Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate and Normalize Batch": {
+      "main": [
+        [
+          {
+            "node": "Batch Is Valid",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Is Valid": {
+      "main": [
+        [
+          {
+            "node": "Get Existing Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Reject Event Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Existing Batch": {
+      "main": [
+        [
+          {
+            "node": "Classify Batch Ledger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Batch Ledger": {
+      "main": [
+        [
+          {
+            "node": "Batch Already Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Batch Already Exists": {
+      "main": [
+        [
+          {
+            "node": "Acknowledge Duplicate Batch",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Persist New Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Persist New Batch": {
+      "main": [
+        [
+          {
+            "node": "Acknowledge Accepted Batch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": false,
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveExecutionProgress": false,
+    "timezone": "Europe/Moscow",
+    "callerPolicy": "workflowsFromSameOwner"
+  },
+  "versionId": "14140885-af3f-49ad-8f40-c60f3ad90370",
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}

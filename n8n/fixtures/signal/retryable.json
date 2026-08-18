@@ -1,0 +1,15 @@
+{
+  "statusCode": 503,
+  "body": {
+    "ok": false,
+    "service": "dayz-signal",
+    "request_id": "cmd_dlv_fixture_restart_game_v1",
+    "command_id": "cmd_dlv_fixture_restart_game_v1",
+    "status": "failed",
+    "created_at": "2030-01-01T12:01:00.000Z",
+    "expires_at": "2030-01-01T12:06:00.000Z",
+    "updated_at": "2030-01-01T12:01:01.000Z",
+    "error_code": "queue_unavailable",
+    "error": "queue_unavailable"
+  }
+}

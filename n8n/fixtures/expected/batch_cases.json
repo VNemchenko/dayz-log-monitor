@@ -1,0 +1,12 @@
+{
+  "fixture": "events/valid_monitor_batch.json",
+  "now": "2030-01-01T12:01:00Z",
+  "cases": [
+    {"name": "valid_monitor_batch", "mutation": null, "valid": true},
+    {"name": "idempotency_header_mismatch", "mutation": {"kind": "header", "value": "batch_00000000000000000000000000000000"}, "valid": false, "error": "idempotency_mismatch"},
+    {"name": "expired_event", "mutation": {"kind": "set", "path": ["events", 0, "expires_at"], "value": "2030-01-01T11:59:00Z"}, "valid": false, "error": "event_expired"},
+    {"name": "unsafe_public_coordinates", "mutation": {"kind": "set", "path": ["events", 1, "public_view", "location", "x"], "value": 4100}, "valid": false, "error": "unsafe_public_projection"},
+    {"name": "raw_player_identity", "mutation": {"kind": "set", "path": ["events", 0, "admin_view", "uid"], "value": "private-uid"}, "valid": false, "error": "forbidden_private_field"},
+    {"name": "mixed_server_batch", "mutation": {"kind": "set", "path": ["events", 2, "server_id"], "value": "other-1"}, "valid": false, "error": "mixed_server_batch"}
+  ]
+}

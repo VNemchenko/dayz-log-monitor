@@ -1,0 +1,2137 @@
+{
+  "schema": 1,
+  "server_id": "livonia-1",
+  "catalog_revision": "sha256:246ca4a93dbee9b3b8388bc9d8250197cd615e4e557f2421d108ee657bd432d6",
+  "snapshot_interval_ms": 60000,
+  "snapshot_start_delay_ms": 10000,
+  "scanner_start_delay_ms": 60000,
+  "scan_tick_ms": 1000,
+  "scan_batch_size": 4,
+  "missing_scans_to_end": 2,
+  "event_points": [
+    {
+      "id": "heli_crash:000",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 740.898437,
+      "z": 5043.588867,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:001",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 761.743042,
+      "z": 3605.641846,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:002",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 1902.029053,
+      "z": 2396.375976,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:003",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 2441.762207,
+      "z": 4908.613281,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:004",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 2639.861328,
+      "z": 6405.301758,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:005",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 2734.593262,
+      "z": 5628.562988,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:006",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 3503.032715,
+      "z": 4181.35791,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:007",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 3826.167236,
+      "z": 725.191772,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:008",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 3976.023682,
+      "z": 6856.164063,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:009",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 4286.803223,
+      "z": 6212.870117,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:010",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 4607.828125,
+      "z": 6965.80957,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:011",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 4725.089844,
+      "z": 3215.219727,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:012",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 4873.035156,
+      "z": 5679.072754,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:013",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5397.504883,
+      "z": 6689.651367,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:014",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5421.377442,
+      "z": 1441.891357,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:015",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5499.094238,
+      "z": 7905.272461,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:016",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5521.995605,
+      "z": 4904.76416,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:017",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5689.485352,
+      "z": 5770.709473,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:018",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5911.780762,
+      "z": 3579.843506,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:019",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 5924.764648,
+      "z": 5012.937988,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:020",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6220.04834,
+      "z": 6929.438477,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:021",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6357.467285,
+      "z": 5393.447754,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:022",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6369.329102,
+      "z": 6150.516602,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:023",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6486.924316,
+      "z": 7557.751953,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:024",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6507.537598,
+      "z": 3160.664062,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:025",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6727.75,
+      "z": 6937.537109,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:026",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6783.110352,
+      "z": 4831.280762,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:027",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6836.494629,
+      "z": 8600.134766,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:028",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6868.194824,
+      "z": 4171.091797,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:029",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 6995.759766,
+      "z": 6220.584473,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:030",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7088.905273,
+      "z": 5616.130371,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:031",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7122.116699,
+      "z": 5103.704101,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:032",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7188.131348,
+      "z": 3713.572266,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:033",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7265.016113,
+      "z": 7720.161133,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:034",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7298.620117,
+      "z": 8475.169922,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:035",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7512.816406,
+      "z": 7044.394531,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:036",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7776.442383,
+      "z": 8989.429688,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:037",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7781.773926,
+      "z": 997.603821,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:038",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7796.510742,
+      "z": 7870.70459,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:039",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7900.789551,
+      "z": 8257.776367,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:040",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 7938.515137,
+      "z": 6592.683594,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:041",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8241.619141,
+      "z": 6025.999512,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:042",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8356.177734,
+      "z": 9151.981445,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:043",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8360.750976,
+      "z": 5494.712402,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:044",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8371.013672,
+      "z": 7563.428223,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:045",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8490.319336,
+      "z": 2832.061035,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:046",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8546.589844,
+      "z": 8372.402344,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:047",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8678.618164,
+      "z": 6389.382813,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:048",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 8957.305664,
+      "z": 5408.166504,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:049",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9198.206055,
+      "z": 6041.199219,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:050",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9270.135742,
+      "z": 7127.370117,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:051",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9395.842773,
+      "z": 8118.120605,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:052",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9493.401367,
+      "z": 6859.635254,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:053",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9537.379883,
+      "z": 6346.113769,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:054",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9593.34375,
+      "z": 8950.186523,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:055",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9657.86,
+      "z": 1019.74,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:056",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9799.932617,
+      "z": 5986.262207,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:057",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9916.824219,
+      "z": 3880.88208,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:058",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 9935.674805,
+      "z": 5458.304199,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:059",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 10066.341797,
+      "z": 7019.535645,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:060",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 10392.649414,
+      "z": 6202.329102,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:061",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 10454.764648,
+      "z": 4566.578125,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:062",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 10513.841797,
+      "z": 7460.008789,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:063",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 10770.838867,
+      "z": 5033.983398,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:064",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 10772.458984,
+      "z": 7141.783691,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:065",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11075.945312,
+      "z": 2103.969238,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:066",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11164.566406,
+      "z": 6245.58252,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:067",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11288.463867,
+      "z": 3901.264893,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:068",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11390.188477,
+      "z": 5130.928223,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:069",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11457.69043,
+      "z": 6532.165527,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:070",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11581.37793,
+      "z": 3195.328857,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:071",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11606.522461,
+      "z": 4326.942871,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:072",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11722.352539,
+      "z": 7612.571777,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:073",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11776.484375,
+      "z": 930.251892,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:074",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 11844.371094,
+      "z": 6020.828613,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:075",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 12028.506836,
+      "z": 5253.910644,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:076",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 12284.845703,
+      "z": 6532.125488,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:077",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 12300.630859,
+      "z": 4292.416504,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "heli_crash:078",
+      "kind": "heli_crash",
+      "event_name": "StaticHeliCrash",
+      "group_name": "",
+      "x": 12352.316406,
+      "z": 3855.271484,
+      "radius": 8.0,
+      "anchor_types": [
+        "Wreck_Mi8_Crashed"
+      ]
+    },
+    {
+      "id": "military_convoy:supply-dambog",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Supply_Dambog",
+      "x": 1079.211,
+      "z": 2327.807,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Uaz_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:supply-tymbard",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Supply_Tymbard",
+      "x": 2411.817,
+      "z": 1431.504,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_T72_Chassis_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:ambushed-polana",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Ambushed_Polana",
+      "x": 3158.676,
+      "z": 2952.208,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban2_green_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:ambushed-adamow",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Ambushed_Adamow",
+      "x": 3273.258,
+      "z": 4830.391,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Uaz_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:abandoned-nadbor",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Abandoned_Nadbor",
+      "x": 4756.113,
+      "z": 3061.519,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_BMP2_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:ambushed-swarog",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Ambushed_Swarog",
+      "x": 5424.362,
+      "z": 1501.195,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_green_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:supply-kopa",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Supply_Kopa",
+      "x": 6021.056,
+      "z": 8017.619,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_offroad02_aban1_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:supply-roztoka",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Supply_Roztoka",
+      "x": 8180.023,
+      "z": 4967.042,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_green_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:abandoned-rodzanica",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Abandoned_Rodzanica",
+      "x": 8235.772,
+      "z": 2685.868,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_offroad02_aban1_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:abandoned-tarnow",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Abandoned_Tarnow",
+      "x": 8540.935,
+      "z": 10389.016,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban2_green_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:abandoned-borek",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Abandoned_Borek",
+      "x": 8772.478,
+      "z": 8563.994,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_green_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:supply-rodzanica2",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Supply_Rodzanica2",
+      "x": 9023.074,
+      "z": 976.305,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Ural_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:abandoned-karlin",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Abandoned_Karlin",
+      "x": 10187.881,
+      "z": 5935.272,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Uaz_DE"
+      ]
+    },
+    {
+      "id": "military_convoy:ambushed-kulno",
+      "kind": "military_convoy",
+      "event_name": "StaticMilitaryConvoy",
+      "group_name": "Ambushed_Kulno",
+      "x": 11726.685,
+      "z": 2852.414,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_green_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-topolin1",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Topolin1",
+      "x": 1190.606,
+      "z": 7663.011,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-topolin2",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Topolin2",
+      "x": 1900.31,
+      "z": 7698.955,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_DE"
+      ]
+    },
+    {
+      "id": "train:train-mil-radacz",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Mil_Radacz",
+      "x": 3267.044,
+      "z": 8253.642,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_Mil_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-radacz",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Radacz",
+      "x": 4250.055,
+      "z": 8563.764,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_DE"
+      ]
+    },
+    {
+      "id": "train:train-mil-gliniska",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Mil_Gliniska",
+      "x": 4996.477,
+      "z": 9020.883,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_Mil_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-sobotka",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Sobotka",
+      "x": 5770.63,
+      "z": 10128.881,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_DE"
+      ]
+    },
+    {
+      "id": "train:train-accident-sobotka",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Accident_Sobotka",
+      "x": 6389.93,
+      "z": 10699.117,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-kolembrody",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Kolembrody",
+      "x": 7468.93,
+      "z": 11504.266,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_DE"
+      ]
+    },
+    {
+      "id": "train:train-accident-kolembrody",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Accident_Kolembrody",
+      "x": 8421.944,
+      "z": 11814.35,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-grabin",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Grabin",
+      "x": 9994.689,
+      "z": 11443.961,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_DE"
+      ]
+    },
+    {
+      "id": "train:train-mil-sitnik",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Mil_Sitnik",
+      "x": 10026.365,
+      "z": 8644.638,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_Mil_DE"
+      ]
+    },
+    {
+      "id": "train:train-accident-grabin",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Accident_Grabin",
+      "x": 10710.917,
+      "z": 11025.219,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_DE"
+      ]
+    },
+    {
+      "id": "train:train-abandoned-sitnik",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Abandoned_Sitnik",
+      "x": 10905.792,
+      "z": 9461.094,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Blue_DE"
+      ]
+    },
+    {
+      "id": "train:train-accident-sitnik",
+      "kind": "train",
+      "event_name": "StaticTrain",
+      "group_name": "Train_Accident_Sitnik",
+      "x": 11239.971,
+      "z": 9929.081,
+      "radius": 8.0,
+      "anchor_types": [
+        "StaticObj_Wreck_Train_742_Red_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-zalesie",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Zalesie",
+      "x": 769.045,
+      "z": 6739.631,
+      "radius": 10.186,
+      "anchor_types": [
+        "Land_Wreck_sed01_aban2_black_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-bielawa2",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Bielawa2",
+      "x": 865.783,
+      "z": 9049.986,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-topolin",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Topolin",
+      "x": 1481.821,
+      "z": 7401.071,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:block-zalesie",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Block_Zalesie",
+      "x": 1500.855,
+      "z": 4734.762,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-topolin2",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Topolin2",
+      "x": 1510.471,
+      "z": 8340.896,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_sed01_aban2_wine_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-bielawa",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Bielawa",
+      "x": 1890.72,
+      "z": 10090.3,
+      "radius": 25.169,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-adamow",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Adamow",
+      "x": 2740.029,
+      "z": 6913.033,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-lukow2",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Lukow2",
+      "x": 3107.63,
+      "z": 11331.74,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_blue_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-huta",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Huta",
+      "x": 3155.413,
+      "z": 4940.649,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-lukow3",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Lukow3",
+      "x": 3415.085,
+      "z": 12256.862,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:block-radacz",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Block_Radacz",
+      "x": 3790.821,
+      "z": 8760.385,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-polana",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Polana",
+      "x": 3905.947,
+      "z": 2211.016,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_sed01_aban2_white_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-lukow",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Lukow",
+      "x": 4149.393,
+      "z": 10874.596,
+      "radius": 10.554,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_firetruck_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-olsanka",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Olsanka",
+      "x": 4602.298,
+      "z": 7681.091,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb02_aban2_blue_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-gliniska",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Gliniska",
+      "x": 5234.237,
+      "z": 10300.578,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_blue_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-nadbor2",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Nadbor2",
+      "x": 5305.8,
+      "z": 3676.219,
+      "radius": 18.202,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-huta2",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Huta2",
+      "x": 5583.282,
+      "z": 5805.994,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_sed02_aban2_red_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-brena",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Brena",
+      "x": 5932.14,
+      "z": 10918.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_sed02_aban1_yellow_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-kopa",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Kopa",
+      "x": 5968.213,
+      "z": 9102.4,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-nadbor",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_nadbor",
+      "x": 6263.151,
+      "z": 3938.712,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-sila",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Sila",
+      "x": 7863.204,
+      "z": 3793.486,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb02_aban1_red_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-radunin",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Radunin",
+      "x": 8312.609,
+      "z": 6362.448,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb02_aban1_black_DE"
+      ]
+    },
+    {
+      "id": "police_situation:block-zapadlisko",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Block_Zapadlisko",
+      "x": 8558.479,
+      "z": 8723.554,
+      "radius": 31.931,
+      "anchor_types": [
+        "Land_Wreck_sed02_aban2_grey_DE"
+      ]
+    },
+    {
+      "id": "police_situation:block-wrezsc",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Block_Wrezsc",
+      "x": 9027.775,
+      "z": 4452.407,
+      "radius": 29.102,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-tarnow",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Tarnow",
+      "x": 9316.563,
+      "z": 10861.035,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-tarnow2",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Tarnow2",
+      "x": 9493.384,
+      "z": 11606.231,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_Ikarus_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-borek",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Borek",
+      "x": 9743.615,
+      "z": 9107.418,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_Tractor_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-widok",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Widok",
+      "x": 10213.42,
+      "z": 2185.113,
+      "radius": 8.0,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:block-gieraltow",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Block_Gieraltow",
+      "x": 10260.424,
+      "z": 4227.363,
+      "radius": 9.113,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-dolina",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Dolina",
+      "x": 10678.632,
+      "z": 1154.983,
+      "radius": 8.366,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-karlin",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_karlin",
+      "x": 10999.524,
+      "z": 6966.359,
+      "radius": 11.22,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban2_police_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-sitnik",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Sitnik",
+      "x": 11005.901,
+      "z": 9121.471,
+      "radius": 19.586,
+      "anchor_types": [
+        "Land_wreck_truck01_aban1_blue_DE"
+      ]
+    },
+    {
+      "id": "police_situation:traffic-gierlatow",
+      "kind": "police_situation",
+      "event_name": "StaticPoliceSituation",
+      "group_name": "Traffic_Gierlatow",
+      "x": 12419.815,
+      "z": 6168.886,
+      "radius": 21.754,
+      "anchor_types": [
+        "Land_Wreck_hb01_aban1_police_DE"
+      ]
+    },
+    {
+      "id": "contaminated_area:000",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 865.0,
+      "z": 5518.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:001",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 1464.0,
+      "z": 9745.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:002",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 2067.0,
+      "z": 11160.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:003",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 2492.0,
+      "z": 5647.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:004",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 3121.0,
+      "z": 6812.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:005",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 3345.0,
+      "z": 2038.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:006",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 3687.0,
+      "z": 11807.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:007",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 4439.0,
+      "z": 6715.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:008",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 4500.0,
+      "z": 4828.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:009",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 4607.0,
+      "z": 6372.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:010",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 4947.0,
+      "z": 2143.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:011",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 5080.0,
+      "z": 2137.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:012",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 5224.0,
+      "z": 5586.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:013",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 5635.0,
+      "z": 3794.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:014",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 5929.0,
+      "z": 6730.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:015",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 5972.0,
+      "z": 8068.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:016",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 6151.0,
+      "z": 4123.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:017",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 6406.0,
+      "z": 8170.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:018",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 7340.0,
+      "z": 2595.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:019",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 7344.0,
+      "z": 2799.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:020",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 7496.0,
+      "z": 2542.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:021",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 7659.0,
+      "z": 5313.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:022",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 7824.0,
+      "z": 10089.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:023",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 7898.0,
+      "z": 9809.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:024",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 8112.0,
+      "z": 8722.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:025",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 8134.0,
+      "z": 10907.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:026",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 8557.0,
+      "z": 9714.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:027",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 8824.0,
+      "z": 6629.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:028",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 8910.0,
+      "z": 2048.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:029",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 9051.0,
+      "z": 4398.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:030",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 9063.0,
+      "z": 6634.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:031",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 9761.0,
+      "z": 8544.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:032",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 9906.0,
+      "z": 3807.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:033",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 10230.0,
+      "z": 2172.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:034",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 11057.0,
+      "z": 4261.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:035",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 11474.0,
+      "z": 4540.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    },
+    {
+      "id": "contaminated_area:036",
+      "kind": "contaminated_area",
+      "event_name": "StaticContaminatedArea",
+      "group_name": "",
+      "x": 11530.0,
+      "z": 486.0,
+      "radius": 8.0,
+      "anchor_types": [
+        "ContaminatedArea_Dynamic"
+      ]
+    }
+  ]
+}

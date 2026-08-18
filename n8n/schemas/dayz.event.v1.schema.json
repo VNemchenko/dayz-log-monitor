@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.example.invalid/dayz.event.v1.schema.json",
+  "title": "dayz-log-monitor projected event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "event_id",
+    "server_id",
+    "type",
+    "occurred_at",
+    "observed_at",
+    "expires_at",
+    "severity",
+    "audience_ceiling",
+    "admin_view",
+    "public_view",
+    "facts",
+    "source"
+  ],
+  "properties": {
+    "schema": {"const": "dayz.event.v1"},
+    "event_id": {"type": "string", "pattern": "^evt_[0-9a-f]{32}$"},
+    "server_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{1,47}$"},
+    "type": {"type": "string"},
+    "occurred_at": {"type": "string", "format": "date-time"},
+    "observed_at": {"type": "string", "format": "date-time"},
+    "expires_at": {"type": "string", "format": "date-time"},
+    "severity": {"enum": ["info", "warning", "critical"]},
+    "audience_ceiling": {"enum": ["admin", "public_delayed", "public"]},
+    "admin_view": {"type": "object", "maxProperties": 64},
+    "public_view": {
+      "oneOf": [
+        {"type": "object", "maxProperties": 32},
+        {"type": "null"}
+      ]
+    },
+    "facts": {"type": "object", "maxProperties": 64},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "file", "offset_start", "offset_end"],
+      "properties": {
+        "kind": {"enum": ["adm", "rpt", "script", "error", "monitor", "storage"]},
+        "file": {"type": "string", "minLength": 1, "maxLength": 180, "pattern": "^[^/\\\\]+$"},
+        "offset_start": {"type": "integer", "minimum": 0},
+        "offset_end": {"type": "integer", "minimum": 0}
+      }
+    }
+  }
+}
